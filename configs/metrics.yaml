@@ -1,0 +1,204 @@
+# ==============================================================================
+# AgriRobust Metrics Specification
+#
+# Authoritative reference: PROJECT_SOT.md Section 10, 17, 18
+# Current Phase: Phase 0 (Project contract and environment)
+# ==============================================================================
+
+version: "1.0.0"
+
+metric_groups:
+  classification:
+    macro_f1:
+      name: "Macro F1"
+      definition: "Unweighted mean of F1-scores across all evaluated classes"
+      expected_input: "Ground truth discrete labels (N,) and predicted discrete classes (N,)"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: true
+      priority: "primary"
+      usage: "Overall diagnostic quality across balanced and imbalanced class sets; central Pareto metric"
+
+    balanced_accuracy:
+      name: "Balanced Accuracy"
+      definition: "Average of recall obtained on each class"
+      expected_input: "Ground truth discrete labels (N,) and predicted discrete classes (N,)"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: true
+      priority: "primary"
+      usage: "Robust performance assessment when class representation is skewed"
+
+    accuracy:
+      name: "Top-1 Accuracy"
+      definition: "Proportion of total samples correctly predicted"
+      expected_input: "Ground truth discrete labels (N,) and predicted discrete classes (N,)"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: true
+      priority: "secondary"
+      usage: "Standard baseline comparability; secondary to Macro F1"
+
+    per_class_f1:
+      name: "Per-Class F1"
+      definition: "Harmonic mean of precision and recall evaluated per individual disease class"
+      expected_input: "Ground truth discrete labels (N,) and predicted discrete classes (N,)"
+      expected_output: "Dictionary mapping class identifier to float in [0.0, 1.0]"
+      higher_is_better: true
+      priority: "secondary"
+      usage: "Detecting specific vulnerable disease categories under distribution shift"
+
+  calibration:
+    ece:
+      name: "Expected Calibration Error (ECE)"
+      definition: "Weighted absolute difference between model confidence and actual empirical accuracy partitioned into M equal bins"
+      expected_input: "Ground truth discrete labels (N,) and predicted class posterior probabilities (N,)"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Evaluating reliability and truthfulness of model confidence scores"
+
+    brier_score:
+      name: "Brier Score"
+      definition: "Mean squared difference between predicted probability distribution and one-hot ground truth"
+      expected_input: "Ground truth discrete labels (N,) and full softmax probability matrix (N, C)"
+      expected_output: "Non-negative float in [0.0, 2.0]"
+      higher_is_better: false
+      priority: "secondary"
+      usage: "Proper scoring rule for probability forecast assessment"
+
+    reliability_diagram:
+      name: "Reliability Diagram"
+      definition: "Visual and tabular partitioning of confidence bins against empirical observed accuracy"
+      expected_input: "Predicted confidences and binary correctness indicators across M bins"
+      expected_output: "Tabular summary and plot data containing (bin_confidence, bin_accuracy, bin_count)"
+      higher_is_better: null
+      priority: "secondary"
+      usage: "Qualitative and diagnostic audit of over-confidence and under-confidence"
+
+  selective_prediction:
+    coverage:
+      name: "Coverage"
+      definition: "Proportion of test instances accepted by the model for classification given confidence threshold tau"
+      expected_input: "Sample predicted confidence scores (N,) and threshold tau"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: true
+      priority: "primary"
+      usage: "Quantifying model willingness to decide rather than abstain"
+
+    risk_at_coverage:
+      name: "Risk at Coverage"
+      definition: "Empirical error rate computed solely on the subset of accepted instances at specified coverage"
+      expected_input: "Ground truth discrete labels, predicted classes, confidence scores, and target coverage"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Demonstrating error reduction when abstention rejects low-confidence predictions"
+
+    risk_coverage_curve:
+      name: "Risk-Coverage Curve (AURC)"
+      definition: "Curve tracing empirical risk across all coverage thresholds from 0 to 1, summarized by area under curve"
+      expected_input: "Ground truth labels, predictions, and confidence ranking"
+      expected_output: "Array of (coverage, risk) coordinates and scalar area value (AURC)"
+      higher_is_better: false
+      priority: "secondary"
+      usage: "Evaluating abstention ranking quality independently of single threshold selection"
+
+  efficiency:
+    parameter_count:
+      name: "Parameter Count"
+      definition: "Total number of trainable and non-trainable model parameters"
+      expected_input: "PyTorch nn.Module instance"
+      expected_output: "Integer (or formatted millions: M)"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Validation of Target A (student <= 10% teacher parameters)"
+
+    model_file_size:
+      name: "Model File Size"
+      definition: "Disk storage occupied by final serialized model checkpoint / export artifact (MB)"
+      expected_input: "Path to checkpoint (.pt, .pte, .onnx, or .tflite)"
+      expected_output: "Float in megabytes (MB)"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Validation of Target B (student model size <= 15 MB)"
+
+    peak_ram:
+      name: "Peak RAM / Memory"
+      definition: "Maximum resident memory allocated during inference execution"
+      expected_input: "Measurement profiler during batch-1 inference run"
+      expected_output: "Float in megabytes (MB)"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Assessing memory feasibility on resource-constrained mobile hardware"
+
+    inference_latency:
+      name: "Inference Latency"
+      definition: "Time taken for model forward pass alone (excluding preprocessing/postprocessing) at batch size 1"
+      expected_input: "Benchmark loop with warmups across at least 100 iterations"
+      expected_output: "Float in milliseconds (ms), reporting mean and P95"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Core component of on-device execution speed"
+
+    throughput:
+      name: "Throughput"
+      definition: "Number of processed images per unit time"
+      expected_input: "Benchmark evaluation harness"
+      expected_output: "Float in frames per second (FPS)"
+      higher_is_better: true
+      priority: "secondary"
+      usage: "Comparison benchmark across desktop and edge hardware"
+
+  deployment:
+    preprocessing_latency:
+      name: "Preprocessing Latency"
+      definition: "Time spent decoding image, resizing, normalizing, and converting to tensor format on device"
+      expected_input: "On-device timer across repeated test images"
+      expected_output: "Float in milliseconds (ms)"
+      higher_is_better: false
+      priority: "secondary"
+      usage: "Ensuring camera input processing does not dominate device runtime"
+
+    end_to_end_phone_latency:
+      name: "End-to-End Phone Latency"
+      definition: "Total time from raw bitmap capture to final prediction/abstention display on Android"
+      expected_input: "Smartphone benchmark suite timing full cycle"
+      expected_output: "Float in milliseconds (ms)"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Validation of Target E (end-to-end phone latency < 100 ms where hardware permits)"
+
+    on_device_memory:
+      name: "On-Device Memory Footprint"
+      definition: "Android runtime PSS / RSS allocated by the inference engine"
+      expected_input: "Android profiler / adb dumpsys meminfo during live inference"
+      expected_output: "Float in megabytes (MB)"
+      higher_is_better: false
+      priority: "primary"
+      usage: "Validating non-disruptive background or interactive mobile execution"
+
+    offline_operation:
+      name: "Offline Operation Status"
+      definition: "Binary confirmation that model initialization and inference execute with airplane mode enabled"
+      expected_input: "Test execution under zero network connectivity"
+      expected_output: "Boolean (true/false)"
+      higher_is_better: true
+      priority: "primary"
+      usage: "Validation of Target D (fully offline operation)"
+
+  segmentation:
+    dice:
+      name: "Dice Similarity Coefficient"
+      definition: "2 * |P ∩ G| / (|P| + |G|) evaluated on predicted lesion mask against ground truth"
+      expected_input: "Predicted binary mask and ground truth binary mask"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: true
+      priority: "secondary"
+      usage: "Auxiliary task evaluation on PlantSeg if segmentation branch is activated"
+
+    iou:
+      name: "Intersection over Union (IoU / Jaccard)"
+      definition: "|P ∩ G| / |P ∪ G| evaluated on predicted lesion area"
+      expected_input: "Predicted binary mask and ground truth binary mask"
+      expected_output: "Float in range [0.0, 1.0]"
+      higher_is_better: true
+      priority: "secondary"
+      usage: "Spatial localization fidelity on disease symptom segmentation"

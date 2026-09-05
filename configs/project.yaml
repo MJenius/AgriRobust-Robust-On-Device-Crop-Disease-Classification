@@ -1,0 +1,122 @@
+# ==============================================================================
+# AgriRobust Master Project & Experiment Configuration Specification
+#
+# Authoritative reference: PROJECT_SOT.md Section 6, 9, 10, 11, 12, 15, 18
+# Current Phase: Phase 0 (Project contract and environment)
+#
+# RULE: Do not choose arbitrary hyper-parameters or architecture decisions that belong
+# to Phase 2+. Explicitly designate them with TO_BE_DEFINED_IN_PHASE_X placeholders.
+# ==============================================================================
+
+project:
+  name: "AgriRobust"
+  working_title: "Robust On-Device Crop Disease Diagnosis"
+  phase: 0
+  version: "0.1.0"
+  description: "Compact agricultural CV model with distillation, calibration, and abstention"
+
+# ------------------------------------------------------------------------------
+# Reproducibility & Random Seed Policy
+# ------------------------------------------------------------------------------
+reproducibility:
+  primary_seed: 42
+  evaluation_seeds:
+    - 42
+    - 1337
+    - 2026
+  deterministic_torch: true
+  deterministic_cudnn: true
+  record_git_hash: true
+  record_environment: true
+
+# ------------------------------------------------------------------------------
+# System & Path Conventions
+# ------------------------------------------------------------------------------
+paths:
+  data_root: "data"
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  manifests_dir: "data/manifests"
+  artifacts_root: "experiments"
+  checkpoints_dir: "experiments/checkpoints"
+  logs_dir: "experiments/logs"
+  runs_dir: "experiments/runs"
+  reports_dir: "reports"
+
+# ------------------------------------------------------------------------------
+# Experiment Naming Policy
+# Format: P<phase>_<role>_<architecture>_<dataset>_<variant>_s<seed>
+# ------------------------------------------------------------------------------
+experiment_naming:
+  pattern: "P{phase:02d}_{role}_{architecture}_{dataset}_{variant}_s{seed}"
+  examples:
+    teacher_baseline: "P02_teacher_timm_convnext_plantvillage_baseline_s42"
+    student_scratch: "P03_student_mobilenetv3_small_plantvillage_scratch_s42"
+    knowledge_distillation: "P04_student_mobilenetv3_small_plantvillage_kd_response_s42"
+    quantization_int8: "P07_student_mobilenetv3_small_plantvillage_ptq_int8_s42"
+
+# ------------------------------------------------------------------------------
+# Experiment Run Metadata Schema
+# Every experiment execution must record this full schema into run_metadata.json
+# ------------------------------------------------------------------------------
+metadata_schema:
+  required_fields:
+    - "experiment_id"
+    - "git_commit"
+    - "timestamp_utc"
+    - "python_version"
+    - "torch_version"
+    - "device"
+    - "random_seed"
+    - "model_role"
+    - "model_architecture"
+    - "dataset_name"
+    - "dataset_version"
+    - "input_resolution"
+    - "hyperparameters"
+    - "checkpoint_path"
+    - "metrics_summary"
+
+# ------------------------------------------------------------------------------
+# Model Architecture Placeholders (To be formalized in Phase 2 & 3)
+# ------------------------------------------------------------------------------
+models:
+  teacher:
+    role: "High-capacity reference model"
+    sot_section: "6.1"
+    architecture: "TO_BE_DEFINED_IN_PHASE_2"
+    pretrained_weights: "TO_BE_DEFINED_IN_PHASE_2"
+    input_resolution: "TO_BE_DEFINED_IN_PHASE_2"
+    phone_deployment_required: false
+
+  student:
+    role: "Deployment-oriented compact vision model"
+    sot_section: "6.2"
+    preferred_family: "MobileNet-family"
+    architecture: "TO_BE_DEFINED_IN_PHASE_3"
+    pretrained_weights: "TO_BE_DEFINED_IN_PHASE_3"
+    input_resolution: "TO_BE_DEFINED_IN_PHASE_3"
+    phone_deployment_required: true
+
+# ------------------------------------------------------------------------------
+# Training Hyperparameter Placeholders (Phase 2 / 3)
+# ------------------------------------------------------------------------------
+training:
+  batch_size: "TO_BE_DEFINED_IN_PHASE_2"
+  optimizer: "TO_BE_DEFINED_IN_PHASE_2"
+  learning_rate: "TO_BE_DEFINED_IN_PHASE_2"
+  lr_scheduler: "TO_BE_DEFINED_IN_PHASE_2"
+  num_epochs: "TO_BE_DEFINED_IN_PHASE_2"
+  weight_decay: "TO_BE_DEFINED_IN_PHASE_2"
+  loss_function: "TO_BE_DEFINED_IN_PHASE_2"
+
+# ------------------------------------------------------------------------------
+# Success Criteria Targets (SOT Section 18) - Targets, not guarantees
+# ------------------------------------------------------------------------------
+targets:
+  parameter_ratio_target: "<= 0.10"       # <=10% of teacher parameters
+  model_size_mb_target: "<= 15.0"         # <=15 MB file size
+  retention_field_macro_f1: ">= 0.95"     # >=95% of teacher field-domain macro-F1
+  offline_inference: true                 # Fully offline Android execution
+  phone_latency_ms_target: "< 100.0"      # <100 ms end-to-end where hardware permits
+  abstention_benefit: "measurably reduces high-confidence errors"

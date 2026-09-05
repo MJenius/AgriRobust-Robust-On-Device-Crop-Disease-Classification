@@ -1,0 +1,127 @@
+# ==============================================================================
+# AgriRobust Dataset Specification and Source Registry
+#
+# Authoritative reference: PROJECT_SOT.md Section 7, 8, 13
+# Current Phase: Phase 0 (Project contract and environment)
+#
+# RULE: Do not fabricate image counts, class names, directory layouts, or licenses
+# without authoritative confirmation. Fields requiring inspection are marked UNKNOWN.
+# ==============================================================================
+
+version: "1.0.0"
+registry_status: "PHASE_0_FROZEN"
+
+datasets:
+  plantvillage:
+    name: "PlantVillage"
+    purpose: "Controlled-domain training / baseline dataset"
+    sot_section: "7.1"
+    role: "training_and_validation"
+    allowed_for_training: true
+    allowed_for_cross_domain_eval: false
+    source_url: "https://github.com/spMohanty/PlantVillage-Dataset"
+    expected_modality: "RGB image"
+    task: "multi_class_plant_disease_classification"
+    access_method: "Public git repository / Zenodo / Kaggle archive"
+    license_notes: "Crowdsourced / Creative Commons (verify specific variant in Phase 1)"
+    expected_local_dir: "data/raw/plantvillage"
+    canonical_split_manifest: "data/manifests/plantvillage_split.json"
+    status:
+      source_info: "VERIFIED"
+      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
+      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+
+  plantdoc:
+    name: "PlantDoc"
+    purpose: "In-the-wild cross-dataset evaluation (natural domain shift)"
+    sot_section: "7.2"
+    role: "cross_domain_evaluation"
+    allowed_for_training: false
+    allowed_for_cross_domain_eval: true
+    source_url: "https://github.com/pratikkayal/PlantDoc-Dataset"
+    expected_modality: "RGB image"
+    task: "multi_class_plant_disease_classification"
+    access_method: "Public git repository"
+    license_notes: "Open academic use (verify license header/repo in Phase 1)"
+    expected_local_dir: "data/raw/plantdoc"
+    canonical_split_manifest: "data/manifests/plantdoc_manifest.json"
+    status:
+      source_info: "VERIFIED"
+      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
+      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+
+  plantseg:
+    name: "PlantSeg"
+    purpose: "In-the-wild disease localization and robustness evaluation"
+    sot_section: "7.3"
+    role: "segmentation_and_robustness_evaluation"
+    allowed_for_training: false
+    allowed_for_cross_domain_eval: true
+    source_url: "UNKNOWN — VERIFY IN PHASE 1"
+    expected_modality: "RGB image + segmentation mask"
+    task: "semantic_segmentation_or_auxiliary_localization"
+    access_method: "Academic repository / publication release"
+    license_notes: "UNKNOWN — VERIFY IN PHASE 1"
+    expected_local_dir: "data/raw/plantseg"
+    canonical_split_manifest: "data/manifests/plantseg_manifest.json"
+    status:
+      source_info: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
+      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+
+  agrobench:
+    name: "AgroBench"
+    purpose: "Broader agricultural evaluation / multimodal benchmark compatibility (optional)"
+    sot_section: "7.4"
+    role: "optional_broader_evaluation"
+    allowed_for_training: false
+    allowed_for_cross_domain_eval: true
+    source_url: "UNKNOWN — VERIFY IN PHASE 1"
+    expected_modality: "RGB image / benchmark questions / tasks"
+    task: "agricultural_benchmark_suite"
+    access_method: "Benchmark release / paper repository"
+    license_notes: "UNKNOWN — VERIFY IN PHASE 1"
+    expected_local_dir: "data/raw/agrobench"
+    canonical_split_manifest: "data/manifests/agrobench_manifest.json"
+    status:
+      source_info: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
+      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
+      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+
+  field_collected:
+    name: "field-collected dataset"
+    purpose: "Real-world smartphone evaluation under authentic field conditions"
+    sot_section: "7.5"
+    role: "field_evaluation_only"
+    allowed_for_training: false
+    allowed_for_cross_domain_eval: true
+    source_url: "INTERNAL / PROJECT_GENERATED"
+    expected_modality: "Smartphone camera RGB photos"
+    task: "real_world_field_diagnosis_and_abstention"
+    access_method: "Locally collected smartphone images"
+    license_notes: "Internal project evaluation asset"
+    expected_local_dir: "data/raw/field_collected"
+    canonical_split_manifest: "data/manifests/field_collected_manifest.json"
+    status:
+      source_info: "VERIFIED"
+      exact_image_count: "UNKNOWN — TO BE COLLECTED IN PHASE 9"
+      exact_class_count: "TO_MATCH_CANONICAL_SUBSET_IN_PHASE_1"
+      exact_directory_structure: "TO_BE_DEFINED_IN_PHASE_9"
+      split_policy: "TEST_ONLY"
+
+# Dataset class and label policy guidelines to be executed in Phase 1
+label_policy:
+  canonical_representation: "TO_BE_ESTABLISHED_IN_PHASE_1"
+  crop_disease_naming_convention: "<crop>___<condition_or_healthy>"
+  healthy_class_handling: "Must be mapped to canonical healthy representations"
+  unpaired_classes_handling: "Classes present in only one dataset must NOT be evaluated cross-domain without explicit alignment"
+  incompatible_labels: "TO_BE_RESOLVED_IN_PHASE_1"
+  cross_dataset_alignment: "UNRESOLVED — REQUIRES_INSPECTION_IN_PHASE_1"
