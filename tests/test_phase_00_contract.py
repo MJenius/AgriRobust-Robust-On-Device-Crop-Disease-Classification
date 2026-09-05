@@ -1,4 +1,4 @@
-"""AgriRobust Phase 0 verification test suite."""
+"""AgriRobust Phase 0 contract verification test suite."""
 
 from agrirobust.config import (
     get_datasets_config,
@@ -11,7 +11,7 @@ from agrirobust.config import (
 def test_project_root_exists():
     root = get_project_root()
     assert root.is_dir()
-    assert (root / "Project_SOT.md").is_file() or (root / "PROJECT_SOT.md").is_file()
+    assert (root / "PROJECT_SOT.md").is_file()
 
 
 def test_required_directories_exist():
@@ -66,13 +66,12 @@ def test_current_phase_contract():
     assert phase_file.is_file()
     content = phase_file.read_text(encoding="utf-8")
 
-    assert "Phase: 0" in content
-    assert "Project Contract and Environment" in content
-    assert "Phase 1 — Dataset Foundation" in content
+    assert "Phase: 1" in content
+    assert "Dataset Foundation" in content
+    assert "Phase 2" in content
     assert "Not Allowed" in content
-    assert "teacher training" in content
-    assert "student training" in content
-    assert "Android implementation" in content
+    assert "teacher" in content or "student" in content
+    assert "Android" in content
 
 
 def test_yaml_configurations_parse_validly():
@@ -89,7 +88,6 @@ def test_dataset_registry_contains_sot_datasets():
     datasets_cfg = get_datasets_config()
     datasets = datasets_cfg.get("datasets", {})
 
-    # Authoritative datasets defined in SOT Section 7
     expected_sot_datasets = {
         "plantvillage",
         "plantdoc",
@@ -125,24 +123,20 @@ def test_metrics_registry_contains_sot_metrics():
     for group in expected_groups:
         assert group in metric_groups, f"Metric group '{group}' missing from metrics.yaml"
 
-    # Verify classification primary metrics
     cls_metrics = metric_groups["classification"]
     for m in ["macro_f1", "balanced_accuracy", "accuracy", "per_class_f1"]:
         assert m in cls_metrics, f"Classification metric '{m}' missing"
         assert "definition" in cls_metrics[m]
         assert "higher_is_better" in cls_metrics[m]
 
-    # Verify calibration metrics
     cal_metrics = metric_groups["calibration"]
     assert "ece" in cal_metrics
     assert "brier_score" in cal_metrics
 
-    # Verify selective prediction metrics
     sel_metrics = metric_groups["selective_prediction"]
     assert "coverage" in sel_metrics
     assert "risk_at_coverage" in sel_metrics
 
-    # Verify efficiency metrics
     eff_metrics = metric_groups["efficiency"]
     for m in [
         "parameter_count",
@@ -153,7 +147,6 @@ def test_metrics_registry_contains_sot_metrics():
     ]:
         assert m in eff_metrics, f"Efficiency metric '{m}' missing"
 
-    # Verify deployment metrics
     dep_metrics = metric_groups["deployment"]
     for m in [
         "preprocessing_latency",
@@ -163,7 +156,6 @@ def test_metrics_registry_contains_sot_metrics():
     ]:
         assert m in dep_metrics, f"Deployment metric '{m}' missing"
 
-    # Verify segmentation metrics
     seg_metrics = metric_groups["segmentation"]
     assert "dice" in seg_metrics
     assert "iou" in seg_metrics
@@ -179,14 +171,13 @@ def test_project_reproducibility_policy():
 
 
 def test_no_premature_phase_implementations():
-    """Verify that no training, distillation, or Android code leaked into Phase 0."""
+    """Verify that no training weights or Android deployment code leaked into the repository."""
     root = get_project_root()
-    # Ensure no model weights or checkpoints have been placed
     checkpoints = list(root.glob("experiments/**/*.pt")) + list(root.glob("experiments/**/*.pth"))
-    assert len(checkpoints) == 0, f"Found unexpected model weights in Phase 0: {checkpoints}"
+    assert len(checkpoints) == 0, f"Found unexpected model weights: {checkpoints}"
 
-    # Ensure no raw dataset images exist yet
-    image_files = list((root / "data" / "raw").rglob("*.jpg")) + list(
-        (root / "data" / "raw").rglob("*.png")
+    # Ensure Android build gradle / apk files do not exist prematurely
+    android_builds = list((root / "android").glob("**/*.gradle*")) + list(
+        (root / "android").glob("**/*.apk")
     )
-    assert len(image_files) == 0, f"Found premature image files in data/raw: {len(image_files)}"
+    assert len(android_builds) == 0, f"Found premature Android build artifacts: {android_builds}"

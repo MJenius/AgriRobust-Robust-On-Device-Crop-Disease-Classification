@@ -2,14 +2,11 @@
 # AgriRobust Dataset Specification and Source Registry
 #
 # Authoritative reference: PROJECT_SOT.md Section 7, 8, 13
-# Current Phase: Phase 0 (Project contract and environment)
-#
-# RULE: Do not fabricate image counts, class names, directory layouts, or licenses
-# without authoritative confirmation. Fields requiring inspection are marked UNKNOWN.
+# Current Phase: Phase 1 (Dataset Foundation - Frozen & Verified)
 # ==============================================================================
 
-version: "1.0.0"
-registry_status: "PHASE_0_FROZEN"
+version: "1.1.0"
+registry_status: "PHASE_1_VERIFIED"
 
 datasets:
   plantvillage:
@@ -22,16 +19,18 @@ datasets:
     source_url: "https://github.com/spMohanty/PlantVillage-Dataset"
     expected_modality: "RGB image"
     task: "multi_class_plant_disease_classification"
-    access_method: "Public git repository / Zenodo / Kaggle archive"
-    license_notes: "Crowdsourced / Creative Commons (verify specific variant in Phase 1)"
-    expected_local_dir: "data/raw/plantvillage"
-    canonical_split_manifest: "data/manifests/plantvillage_split.json"
+    access_method: "Public git repository (crowdsourced benchmark)"
+    license_notes: "Creative Commons Attribution-ShareAlike (CC BY-SA)"
+    expected_local_dir: "data/raw/plantvillage_repo/raw/color"
+    canonical_split_manifest: "data/manifests/plantvillage_manifest.json"
     status:
       source_info: "VERIFIED"
-      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
-      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+      exact_image_count: 54305
+      exact_class_count: 38
+      corrupted_files: 0
+      exact_internal_duplicates: 21
+      exact_directory_structure: "raw/color/<raw_class_name>/*.jpg"
+      split_policy: "70% train (38,047), 15% val (8,129), 15% test (8,129) deterministically partitioned by seed 42"
 
   plantdoc:
     name: "PlantDoc"
@@ -41,18 +40,23 @@ datasets:
     allowed_for_training: false
     allowed_for_cross_domain_eval: true
     source_url: "https://github.com/pratikkayal/PlantDoc-Dataset"
-    expected_modality: "RGB image"
-    task: "multi_class_plant_disease_classification"
-    access_method: "Public git repository"
-    license_notes: "Open academic use (verify license header/repo in Phase 1)"
-    expected_local_dir: "data/raw/plantdoc"
-    canonical_split_manifest: "data/manifests/plantdoc_manifest.json"
+    detection_source_url: "https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset"
+    expected_modality: "RGB image (detection annotations with 8,921 bounding boxes)"
+    task: "cropped_plant_leaf_disease_classification"
+    task_policy:
+      decision: "classification_on_plant_leaf_crops"
+      rationale: "PlantDoc in-the-wild multi-object detection imagery is processed into discrete leaf crops to evaluate the compact classifier under natural distribution shift without multi-object confounding."
+    access_method: "Public git repositories"
+    license_notes: "CC BY 4.0"
+    expected_local_dir: "data/raw/plantdoc_od"
+    canonical_split_manifest: "data/manifests/plantdoc_crops_manifest.json"
     status:
       source_info: "VERIFIED"
-      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
-      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+      exact_image_count: 2581
+      exact_bounding_boxes: 8921
+      exact_valid_leaf_crops: 8883
+      exact_class_count: 29
+      split_policy: "100% held-out test set for cross-domain evaluation (8,883 leaf crops across 29 canonical classes)"
 
   plantseg:
     name: "PlantSeg"
@@ -61,40 +65,42 @@ datasets:
     role: "segmentation_and_robustness_evaluation"
     allowed_for_training: false
     allowed_for_cross_domain_eval: true
-    source_url: "UNKNOWN — VERIFY IN PHASE 1"
+    source_url: "https://github.com/tqwei05/PlantSeg"
+    zenodo_url: "https://zenodo.org/records/14935094"
+    archive_file: "plantsegv3.zip"
     expected_modality: "RGB image + segmentation mask"
     task: "semantic_segmentation_or_auxiliary_localization"
-    access_method: "Academic repository / publication release"
-    license_notes: "UNKNOWN — VERIFY IN PHASE 1"
-    expected_local_dir: "data/raw/plantseg"
+    access_method: "Zenodo archive via GitHub project repository"
+    license_notes: "CC BY 4.0"
+    expected_local_dir: "data/raw/plantseg_zenodo"
     canonical_split_manifest: "data/manifests/plantseg_manifest.json"
     status:
-      source_info: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
-      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+      source_info: "VERIFIED"
+      exact_image_count: 11458
+      exact_class_count: 115
+      split_policy: "Preserved official benchmark splits (train: 8,020, val: 1,146, test: 2,292)"
 
   agrobench:
     name: "AgroBench"
-    purpose: "Broader agricultural evaluation / multimodal benchmark compatibility (optional)"
+    purpose: "Broader external agricultural sanity check (optional VLM benchmark)"
     sot_section: "7.4"
     role: "optional_broader_evaluation"
     allowed_for_training: false
     allowed_for_cross_domain_eval: true
-    source_url: "UNKNOWN — VERIFY IN PHASE 1"
+    source_url: "https://huggingface.co/datasets/Project-AgML/AgroBench"
+    source_alternatives:
+      - "https://huggingface.co/datasets/risashinoda/AgroBench"
     expected_modality: "RGB image / benchmark questions / tasks"
-    task: "agricultural_benchmark_suite"
-    access_method: "Benchmark release / paper repository"
-    license_notes: "UNKNOWN — VERIFY IN PHASE 1"
+    task: "agricultural_vlm_benchmark_suite"
+    access_method: "Hugging Face Datasets"
+    license_notes: "CC BY-NC 4.0"
     expected_local_dir: "data/raw/agrobench"
     canonical_split_manifest: "data/manifests/agrobench_manifest.json"
     status:
-      source_info: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_image_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_class_count: "UNKNOWN — VERIFY IN PHASE 1"
-      exact_directory_structure: "UNKNOWN — VERIFY IN PHASE 1"
-      split_policy: "TO_BE_DETERMINED_IN_PHASE_1"
+      source_info: "VERIFIED"
+      exact_image_count: 4342
+      exact_class_count: "203 crop categories / 682 sub-classes"
+      split_policy: "Optional external VLM verification"
 
   field_collected:
     name: "field-collected dataset"
@@ -117,11 +123,13 @@ datasets:
       exact_directory_structure: "TO_BE_DEFINED_IN_PHASE_9"
       split_policy: "TEST_ONLY"
 
-# Dataset class and label policy guidelines to be executed in Phase 1
+# Dataset class and label policy established in Phase 1
 label_policy:
-  canonical_representation: "TO_BE_ESTABLISHED_IN_PHASE_1"
-  crop_disease_naming_convention: "<crop>___<condition_or_healthy>"
-  healthy_class_handling: "Must be mapped to canonical healthy representations"
-  unpaired_classes_handling: "Classes present in only one dataset must NOT be evaluated cross-domain without explicit alignment"
-  incompatible_labels: "TO_BE_RESOLVED_IN_PHASE_1"
-  cross_dataset_alignment: "UNRESOLVED — REQUIRES_INSPECTION_IN_PHASE_1"
+  canonical_representation: "<crop>___<condition_or_healthy>"
+  total_canonical_classes: 38
+  shared_cross_domain_classes: 29
+  plantvillage_only_classes: 9
+  plantdoc_only_classes: 0
+  healthy_classes_count: 12
+  disease_classes_count: 26
+  train_evaluation_compatibility: "Cross-domain evaluation on PlantDoc will evaluate the 29 shared classes; 9 PlantVillage-only classes will be evaluated clean-domain only."

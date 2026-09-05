@@ -53,23 +53,25 @@ In strict compliance with `PROJECT_SOT.md` (Sections 21, 23, 24, 25), this log s
 | Dataset | Provenance Status | Verified Information | Unresolved / Unknown Items (Deferred to Phase 1) |
 | :--- | :---: | :--- | :--- |
 | **PlantVillage** | VERIFIED Source | Source URL: `https://github.com/spMohanty/PlantVillage-Dataset`. Role: Controlled training / baseline. | Exact image count, exact class count, directory structure, and split manifest are UNKNOWN; to be audited in Phase 1. |
-| **PlantDoc** | VERIFIED Source | Source URL: `https://github.com/pratikkayal/PlantDoc-Dataset`. Role: Cross-domain in-the-wild evaluation. | Exact image count, bounding-box vs crop format, exact class taxonomy are UNKNOWN; to be audited in Phase 1. |
-| **PlantSeg** | UNKNOWN Source | Role: In-the-wild disease localization and segmentation. | Official repository URL, license, modality format, and mask annotations are UNKNOWN; to be investigated in Phase 1. |
-| **AgroBench** | UNKNOWN Source | Role: Optional broader agricultural evaluation. | Benchmark access, task structure, and evaluation protocol are UNKNOWN; to be investigated in Phase 1. |
+| **PlantDoc** | VERIFIED Source & Task | Source URL: `https://github.com/pratikkayal/PlantDoc-Dataset`. Role: Cross-domain in-the-wild evaluation. Standardized CC BY 4.0 resource with ~8,600 bounding-box annotations. **Task Decision**: Evaluation on plant/leaf crops generated via a reproducible pipeline to maintain strict focus on the compact classifier. | Exact image count, bounding-box crop manifest generation, minimum size filters, and class taxonomy alignment are UNKNOWN; to be executed in Phase 1. |
+| **PlantSeg** | VERIFIED Source | Source URL: `https://github.com/tqwei05/PlantSeg`. Role: In-the-wild disease localization and segmentation. Documented >11,400 images, 115 diseases, Zenodo release. | Exact release version, license details, and archive layout to be audited in Phase 1. |
+| **AgroBench** | VERIFIED Source | Source URL: `https://huggingface.co/datasets/Project-AgML/AgroBench` (Alternative: `https://huggingface.co/datasets/risashinoda/AgroBench`). Role: Optional broader agricultural evaluation. Documented 4,342 annotated multimodal examples. | Canonical release/access terms and vision-compatible subset extraction to be audited in Phase 1. |
 | **Field-Collected** | VERIFIED Source | Role: Real-world smartphone evaluation asset. Source: Internal project collection. | To be captured and annotated in Phase 9 on physical Android devices. |
 
 ---
 
 ## 6. Dataset Class / Label Policy & Unresolved Decisions
 
+- **DECIDED (PlantDoc Task)**: PlantDoc in-the-wild cross-domain evaluation will be evaluated as **cropped plant/leaf classification** generated from the bounding-box annotations with a frozen, reproducible extraction script in Phase 1. This prevents full-scene detection confounders and keeps the benchmark aligned with the core compact classifier research question.
 - **DECIDED**: Do not perform synthetic or arbitrary label mapping across datasets during Phase 0.
-- **UNKNOWN**: Cross-dataset label alignment between PlantVillage (controlled leaf) and PlantDoc (field plants with background) is unknown and may involve disjoint or partially overlapping classes.
+- **UNKNOWN**: Cross-dataset label alignment between PlantVillage (controlled leaf) and PlantDoc (leaf crops) is unknown and may involve disjoint or partially overlapping classes.
 - **DEFERRED (Phase 1)**:
   1. Define canonical label representation (`<crop>___<condition>`).
-  2. Map dataset-specific class names to canonical classes.
-  3. Determine policy for unshared classes (classes present in PlantVillage but absent in PlantDoc, and vice versa).
-  4. Define handling of "healthy" control classes across datasets.
-  5. Check for data leakage, duplicates, or corrupted files.
+  2. Implement reproducible bounding-box to leaf crop extraction for PlantDoc.
+  3. Map dataset-specific class names to canonical classes.
+  4. Determine policy for unshared classes (classes present in PlantVillage but absent in PlantDoc, and vice versa).
+  5. Define handling of "healthy" control classes across datasets.
+  6. Check for data leakage, duplicates, or corrupted files.
 
 ---
 
@@ -84,11 +86,11 @@ In strict compliance with `PROJECT_SOT.md` (Sections 21, 23, 24, 25), this log s
 
 ---
 
-## 8. SOT Inconsistencies or Ambiguities
+## 8. SOT Inconsistencies or Ambiguities Resolved
 
-- **Ambiguity**: SOT Section 7 lists `PlantSeg` and `AgroBench` as planned datasets, but external repository URLs are not specified in the SOT.
-- **Resolution**: Both datasets are explicitly registered in `configs/datasets.yaml` with status `UNKNOWN — VERIFY IN PHASE 1`. No fake URLs or image counts were invented.
-- **Filename normalization**: The repository initially contained `Project_SOT.md`. In Windows systems, filenames are case-insensitive, but cross-platform Git conventions prefer exact matching. A symlink or documentation note links `PROJECT_SOT.md` to `Project_SOT.md`.
+- **SOT Filename Normalization**: The specification file has been formally normalized to uppercase `PROJECT_SOT.md` via `git mv Project_SOT.md PROJECT_SOT.md` to guarantee cross-platform compatibility across case-sensitive Linux/macOS filesystems and Windows.
+- **External Dataset Sources**: Authoritative external sources for `PlantSeg` (`https://github.com/tqwei05/PlantSeg`) and `AgroBench` (`https://huggingface.co/datasets/Project-AgML/AgroBench`) have been confirmed and frozen in `configs/datasets.yaml`. Phase 1 will audit their respective Zenodo/HuggingFace releases.
+- **PlantDoc Evaluation Strategy**: Formally decided in favor of cropped leaf classification rather than full-image scene classification or object detection.
 
 ---
 

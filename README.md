@@ -43,7 +43,7 @@ Decision Rule: High Confidence Prediction OR Selective Abstention
 **Current Phase: Phase 0 — Project Contract and Environment**
 
 Refer to [CURRENT_PHASE.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/CURRENT_PHASE.md) for allowed activities and phase boundaries.  
-The authoritative project specification is preserved in [PROJECT_SOT.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/Project_SOT.md).
+The authoritative project specification is preserved in [PROJECT_SOT.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/PROJECT_SOT.md).
 
 > **Note**: In Phase 0, no model training, knowledge distillation, robustness benchmarking, compression, or Android app implementation is performed.
 
@@ -51,7 +51,7 @@ The authoritative project specification is preserved in [PROJECT_SOT.md](file://
 
 ```text
 agrirobust/
-├── Project_SOT.md       # Authoritative Single Source of Truth
+├── PROJECT_SOT.md       # Authoritative Single Source of Truth
 ├── CURRENT_PHASE.md     # Phase tracking and phase gates
 ├── README.md            # Project overview and instructions
 ├── pyproject.toml       # Python package configuration and pinned dependencies
