@@ -97,13 +97,18 @@ models:
     role: "Deployment-oriented compact vision model"
     sot_section: "6.2"
     preferred_family: "MobileNet-family"
-    architecture: "TO_BE_DEFINED_IN_PHASE_3"
-    pretrained_weights: "TO_BE_DEFINED_IN_PHASE_3"
-    input_resolution: "TO_BE_DEFINED_IN_PHASE_3"
+    architecture: "mobilenet_v3_small"
+    pretrained_weights: "MobileNet_V3_Small_Weights.IMAGENET1K_V1"
+    input_resolution: [3, 224, 224]
+    total_parameters: 1556806
+    parameter_ratio_of_teacher: 0.0559
+    checkpoint_file_size_mb: 6.076
+    primary_checkpoint: "experiments/checkpoints/P03_student_mobilenetv3_small_plantvillage_s42.pt"
+    primary_checkpoint_sha256: "6076d8a2b0f4d5d562b2ce380df91ceb2561b1105b13eeab08a60fe93cce2eee"
     phone_deployment_required: true
 
 # ------------------------------------------------------------------------------
-# Training Hyperparameters Frozen in Phase 2
+# Training Hyperparameters Frozen in Phase 2 & Phase 3
 # ------------------------------------------------------------------------------
 training:
   teacher:
@@ -115,6 +120,18 @@ training:
     weight_decay: 0.0001
     loss_function: "CrossEntropyLoss"
     random_seeds: [42, 1337, 2026]
+
+  student_baseline:
+    batch_size: 128
+    optimizer: "AdamW"
+    learning_rate: 0.001
+    lr_scheduler: "CosineAnnealingLR (eta_min=1e-5)"
+    num_epochs: 15
+    weight_decay: 0.0001
+    loss_function: "CrossEntropyLoss"
+    distillation_applied: false
+    compression_applied: false
+    primary_seed: 42
 
 # ------------------------------------------------------------------------------
 # Success Criteria Targets (SOT Section 18) - Targets, not guarantees

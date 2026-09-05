@@ -66,12 +66,9 @@ def test_current_phase_contract():
     assert phase_file.is_file()
     content = phase_file.read_text(encoding="utf-8")
 
-    assert "Phase: 1" in content
-    assert "Dataset Foundation" in content
-    assert "Phase 2" in content
-    assert "Not Allowed" in content
-    assert "teacher" in content or "student" in content
-    assert "Android" in content
+    assert "# Phase:" in content
+    assert "## Objective" in content
+    assert "Next Phase" in content
 
 
 def test_yaml_configurations_parse_validly():
@@ -171,12 +168,12 @@ def test_project_reproducibility_policy():
 
 
 def test_no_premature_phase_implementations():
-    """Verify that no later phase model weights (student/quantized) or Android deployment code leaked into the repository."""
+    """Verify that no later phase model weights (distillation/quantized) or Android deployment code leaked into the repository."""
     root = get_project_root()
-    student_checkpoints = list(root.glob("experiments/**/*student*.pt")) + list(
-        root.glob("experiments/**/*quant*.pt")
-    )
-    assert len(student_checkpoints) == 0, f"Found unexpected student/quant weights: {student_checkpoints}"
+    distill_quant_checkpoints = list(root.glob("experiments/**/*kd*.pt")) + list(
+        root.glob("experiments/**/*distill*.pt")
+    ) + list(root.glob("experiments/**/*quant*.pt"))
+    assert len(distill_quant_checkpoints) == 0, f"Found unexpected distillation/quant weights: {distill_quant_checkpoints}"
 
     # Ensure Android build gradle / apk files do not exist prematurely
     android_builds = list((root / "android").glob("**/*.gradle*")) + list(

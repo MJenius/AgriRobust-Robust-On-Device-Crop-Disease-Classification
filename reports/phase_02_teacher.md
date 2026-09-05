@@ -28,13 +28,13 @@ In strict accordance with `PROJECT_SOT.md` (Sections 6, 9, 10, 12, 13, 21):
 
 Three modern pretrained vision architectures were compared for the high-capacity Teacher role:
 
-| Candidate Backbone | Pretrained Weights / Source | Total Params | Top-1 ImNet (Ref) | Architectural Profile & Agricultural Suitability |
+| Candidate Backbone | Pretrained Weights / Source | Total Params | Top-1 ImNet (Ref) | Architectural Profile & Selection Rationale |
 | :--- | :--- | :---: | :---: | :--- |
-| **`ConvNeXt-Tiny`** *(Selected)* | `ConvNeXt_Tiny_Weights.IMAGENET1K_V1` | **27.85M** | 82.5% | Pure convolutional modern design with 7x7 depthwise convolutions and inverted bottlenecks. Outstanding spatial inductive bias for fine-grained leaf texture lesions; standard Tensor representation ideal for feature distillation. |
+| **`ConvNeXt-Tiny`** *(Selected)* | `ConvNeXt_Tiny_Weights.IMAGENET1K_V1` | **27.85M** | 82.5% | Pure convolutional modern design with 7x7 depthwise convolutions and inverted bottlenecks. Selected as the project's reference teacher architecture due to its clean tensor structure, standard convolutional feature maps for downstream distillation, and robust CPU execution. |
 | **`EfficientNetV2-S`** | `EfficientNet_V2_S_Weights.IMAGENET1K_V1` | 21.46M | 84.2% | Fused-MBConv stages optimized for training speed. Slightly fewer parameters, but depthwise inverted blocks produce more heterogeneous intermediate features for distillation. |
 | **`Swin-T`** | `Swin_T_Weights.IMAGENET1K_V1` | 28.29M | 81.3% | Hierarchical shifted-window transformer. Strong long-range attention, but higher memory footprint during forward pass on CPU and sensitive to variable aspect ratio crops. |
 
-**Selection Decision**: **`ConvNeXt-Tiny`** was selected based on its superior inductive bias on micro-lesion visual patterns, clean feature maps for later student distillation, and rock-solid CPU inference stability.
+**Selection Decision**: **`ConvNeXt-Tiny`** was selected as the reference teacher design based on architecture suitability for convolutional feature distillation, manageable compute footprint, and execution stability. (Note: This selection represents an architectural choice for the reference baseline; it is not an empirical claim that ConvNeXt objectively outperforms other backbones on agricultural tasks).
 
 ---
 
