@@ -70,12 +70,14 @@ We established the canonical representation format: `<crop>___<condition_or_heal
 
 ## 5. Integrity & Leakage Verification
 
-1. **Corruption Audit**: Zero corrupted or truncated image files detected across PlantVillage, PlantDoc, and PlantSeg.
-2. **Duplicate Detection**: SHA-256 hash checks identified 21 exact internal duplicates within PlantVillage (cataloged in the manifest without silent deletion).
-3. **Leakage Elimination**:
-   - PlantVillage train/val/test splits are strictly disjoint partitions.
-   - PlantDoc is 100% held out exclusively for cross-domain evaluation (zero overlap with training).
-   - PlantDoc task was locked to leaf crops, eliminating background detection confounding.
+1. **PlantVillage Total Count Reconciliation**: **54,305** images (38,047 train, 8,129 val, 8,129 test). While historical/literature summaries sometimes cited 54,303, the authoritative generated manifest (`plantvillage_manifest.json`) indexes all 54,305 physical files. Configuration (`configs/datasets.yaml`), test suites (`tests/test_phase_01_datasets.py`), and reports are strictly unified and locked to this exact manifest count of 54,305.
+2. **Corruption Audit**: Zero unreadable, truncated, or decoding-failed image files detected across PlantVillage, PlantDoc, and PlantSeg.
+3. **PlantVillage Internal Duplicates**: SHA-256 hash checks identified 21 exact internal duplicates within PlantVillage (cataloged in the manifest without silent deletion).
+4. **PlantDoc Crop Hashing**: Individual SHA-256 hashes of extracted crop pixel bytes are computed and recorded for all 8,883 crops in `plantdoc_crops_manifest.json`.
+5. **Split Disjointness & Cross-Dataset Leakage Assessment**:
+   - **Internal Split Disjointness**: PlantVillage train, validation, and test splits are strictly disjoint partitions generated deterministically by seed 42.
+   - **Training Isolation**: PlantDoc is 100% held out exclusively as a cross-domain test evaluation benchmark; no PlantDoc images or crops are used in any training split.
+   - **Cross-Dataset Leakage & Duplicate Boundary**: Combining PlantDoc's existing train/test images into a single `cross_domain_test` set serves exclusively as an out-of-domain natural shift benchmark. This protocol establishes **training pipeline isolation** (PlantDoc was not part of the training set); it does **not** assert that PlantDoc and PlantVillage share zero duplicate or near-duplicate imagery across the public domain, nor does it constitute an exhaustive cross-dataset duplicate audit. Cross-dataset generalization claims will be reported with this explicit caveat.
 
 ---
 

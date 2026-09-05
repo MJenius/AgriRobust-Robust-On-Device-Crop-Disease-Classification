@@ -84,9 +84,13 @@ models:
   teacher:
     role: "High-capacity reference model"
     sot_section: "6.1"
-    architecture: "TO_BE_DEFINED_IN_PHASE_2"
-    pretrained_weights: "TO_BE_DEFINED_IN_PHASE_2"
-    input_resolution: "TO_BE_DEFINED_IN_PHASE_2"
+    architecture: "convnext_tiny"
+    pretrained_weights: "ConvNeXt_Tiny_Weights.IMAGENET1K_V1"
+    input_resolution: [3, 224, 224]
+    total_parameters: 27849350
+    checkpoint_file_size_mb: 106.306
+    primary_checkpoint: "experiments/checkpoints/P02_teacher_convnext_tiny_plantvillage_s42.pt"
+    primary_checkpoint_sha256: "7b80b48404531597f098571e56d53f03676305b57a7938ff27a4389e8fa1d1af"
     phone_deployment_required: false
 
   student:
@@ -99,16 +103,18 @@ models:
     phone_deployment_required: true
 
 # ------------------------------------------------------------------------------
-# Training Hyperparameter Placeholders (Phase 2 / 3)
+# Training Hyperparameters Frozen in Phase 2
 # ------------------------------------------------------------------------------
 training:
-  batch_size: "TO_BE_DEFINED_IN_PHASE_2"
-  optimizer: "TO_BE_DEFINED_IN_PHASE_2"
-  learning_rate: "TO_BE_DEFINED_IN_PHASE_2"
-  lr_scheduler: "TO_BE_DEFINED_IN_PHASE_2"
-  num_epochs: "TO_BE_DEFINED_IN_PHASE_2"
-  weight_decay: "TO_BE_DEFINED_IN_PHASE_2"
-  loss_function: "TO_BE_DEFINED_IN_PHASE_2"
+  teacher:
+    batch_size: 256
+    optimizer: "AdamW"
+    learning_rate: 0.001
+    lr_scheduler: "CosineAnnealingLR (eta_min=1e-5)"
+    num_epochs: 15
+    weight_decay: 0.0001
+    loss_function: "CrossEntropyLoss"
+    random_seeds: [42, 1337, 2026]
 
 # ------------------------------------------------------------------------------
 # Success Criteria Targets (SOT Section 18) - Targets, not guarantees

@@ -171,10 +171,12 @@ def test_project_reproducibility_policy():
 
 
 def test_no_premature_phase_implementations():
-    """Verify that no training weights or Android deployment code leaked into the repository."""
+    """Verify that no later phase model weights (student/quantized) or Android deployment code leaked into the repository."""
     root = get_project_root()
-    checkpoints = list(root.glob("experiments/**/*.pt")) + list(root.glob("experiments/**/*.pth"))
-    assert len(checkpoints) == 0, f"Found unexpected model weights: {checkpoints}"
+    student_checkpoints = list(root.glob("experiments/**/*student*.pt")) + list(
+        root.glob("experiments/**/*quant*.pt")
+    )
+    assert len(student_checkpoints) == 0, f"Found unexpected student/quant weights: {student_checkpoints}"
 
     # Ensure Android build gradle / apk files do not exist prematurely
     android_builds = list((root / "android").glob("**/*.gradle*")) + list(

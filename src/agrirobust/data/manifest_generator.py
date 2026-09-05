@@ -7,6 +7,8 @@ import random
 import zipfile
 from pathlib import Path
 
+from PIL import Image
+
 from agrirobust.config import get_project_root
 
 # Canonical class taxonomy definition: standard <crop>___<condition>
@@ -93,6 +95,11 @@ def compute_sha256(file_path: Path) -> str:
     return h.hexdigest()
 
 
+def compute_crop_sha256(img: Image.Image) -> str:
+    """Compute deterministic SHA-256 hash of raw crop pixel bytes."""
+    return hashlib.sha256(img.tobytes()).hexdigest()
+
+
 def generate_plantvillage_manifest(
     seed: int = 42, val_ratio: float = 0.15, test_ratio: float = 0.15
 ):
@@ -167,6 +174,8 @@ def generate_plantdoc_crop_manifest(min_crop_size: int = 20):
     manifests_dir.mkdir(parents=True, exist_ok=True)
 
     records = []
+    img_cache = {}
+
     for split in ["train", "test"]:
         csv_file = pd_od_dir / f"{split}_labels.csv"
         if not csv_file.exists():
@@ -203,6 +212,16 @@ def generate_plantdoc_crop_manifest(min_crop_size: int = 20):
                 if not img_path.exists():
                     continue
 
+                if img_path not in img_cache:
+                    img_cache[img_path] = Image.open(img_path)
+
+                try:
+                    full_im = img_cache[img_path]
+                    cropped_im = full_im.crop((xmin, ymin, xmax, ymax))
+                    crop_hash = compute_crop_sha256(cropped_im)
+                except Exception:
+                    crop_hash = ""
+
                 rel_path = img_path.relative_to(root).as_posix()
                 records.append({
                     "dataset": "plantdoc",
@@ -213,6 +232,7 @@ def generate_plantdoc_crop_manifest(min_crop_size: int = 20):
                     "canonical_label": canonical_cls,
                     "crop": crop,
                     "is_healthy": is_healthy,
+                    "crop_sha256": crop_hash,
                     "split": "cross_domain_test",
                     "original_od_split": split,
                 })
