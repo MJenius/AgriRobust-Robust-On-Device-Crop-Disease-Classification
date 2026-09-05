@@ -21,7 +21,7 @@ Key Empirical Findings:
 3. **Controlled Clean Performance**: On the controlled clean PlantVillage test set, the student fine-tuned end-to-end reaches **99.75% Accuracy** and **0.9962 Macro F1** (surpassing the linear-probed teacher head by +1.64% F1 due to end-to-end parameter adaptation).
 4. **Severe In-The-Wild Gap (Domain Shift)**: Under natural domain shift on PlantDoc leaf crops, the student collapses to **11.62% Accuracy** and **0.1298 Macro F1** (down from the Teacher's `0.2073 Macro F1`).
    - The uncompressed student retains only **62.61% of the teacher's out-of-domain Macro F1**.
-   - This **-7.75% absolute / -37.39% relative out-of-domain gap** establishes the primary target for Phase 4 Knowledge Distillation.
+   - This **0.0775 absolute Macro F1 (or -37.39% relative to teacher) out-of-domain gap** establishes the primary target for Phase 4 Knowledge Distillation.
 
 ---
 
@@ -87,12 +87,12 @@ The student baseline was trained with standard end-to-end fine-tuning without te
 
 ## 5. Key Research Findings
 
-1. **Controlled vs. In-The-Wild Divergence**:
-   The student model achieves near-perfect discrimination on laboratory images (`0.9962 F1`), but suffers an catastrophic **86.97% relative performance drop** when evaluated on in-the-wild crops (`0.1298 F1`).
+1. **In-Domain vs. In-The-Wild Performance**:
+   The student model achieves strong in-domain diagnostic discrimination on laboratory images (`0.9962 Macro F1`), but exhibits poor generalization when evaluated on in-the-wild crops (`0.1298 Macro F1`, an **86.97% relative in-domain to cross-domain performance drop**).
 2. **The "Capacity Collapse" Under Natural Shift**:
-   While the Teacher also degraded out-of-domain (`0.2073 F1`), the Student lost an additional **37.39% of the Teacher's remaining generalization ability**. The compact model lacks the parameter capacity to maintain invariant visual features without regularization or distillation.
+   While the Teacher also degraded out-of-domain (`0.2073 Macro F1`), the Student lost an additional **37.39% of the Teacher's remaining generalization ability**. The compact model lacks the parameter capacity to maintain invariant visual features without regularization or distillation.
 3. **The Distillation Target**:
-   Phase 4 (Knowledge Distillation) now has a clear, quantified benchmark: transfer the Teacher's out-of-domain knowledge to bring the Student's cross-domain Macro F1 closer to `0.2073` while retaining its `1.56M` parameter footprint and `18.4 ms` latency.
+   Phase 4 (Knowledge Distillation) now has a clear, quantified benchmark: transfer the Teacher's out-of-domain knowledge to close the **0.0775 absolute Macro F1 gap** (bringing the Student's cross-domain Macro F1 closer to `0.2073`) while retaining its `1.56M` parameter footprint and `18.4 ms` latency.
 
 ---
 
