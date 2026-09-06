@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_green_primary">#2E7D32</color>
+    <color name="brand_green_dark">#1B5E20</color>
+    <color name="brand_green_light">#4CAF50</color>
+    <color name="brand_accent">#81C784</color>
+    <color name="bg_dark">#121614</color>
+    <color name="surface_dark">#1E2420</color>
+    <color name="surface_card">#27312A</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0BEC5</color>
+    <color name="status_accepted">#00E676</color>
+    <color name="status_abstained">#FF5252</color>
+</resources>

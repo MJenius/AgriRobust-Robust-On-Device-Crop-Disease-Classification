@@ -78,16 +78,29 @@ class AgriClassifier(private val context: Context) {
                 classLabels.add(classesArray.getString(i))
             }
 
-            // Load PyTorch Mobile model artifact
-            // Tries dynamic-int8 artifact first; falls back to fp32 if unavailable
-            val modelPath = try {
-                assetFilePath("model_int8_dynamic.pt")
-            } catch (e: IOException) {
-                assetFilePath("model_fp32.pt")
-            }
+            // Load PyTorch Mobile Lite Interpreter model artifact
+            // Tries dynamic-int8 .ptl first, then fp32 .ptl, then standard .pt containers
+            val candidateArtifacts = listOf(
+                "model_int8_dynamic.ptl",
+                "model_fp32.ptl",
+                "model_int8_dynamic.pt",
+                "model_fp32.pt"
+            )
 
-            module = LiteModuleLoader.load(modelPath)
+            var loadedModule: Module? = null
+            for (artifactName in candidateArtifacts) {
+                try {
+                    val path = assetFilePath(artifactName)
+                    loadedModule = LiteModuleLoader.load(path)
+                    android.util.Log.i("AgriClassifier", "Successfully loaded mobile model: $artifactName")
+                    break
+                } catch (e: Exception) {
+                    android.util.Log.w("AgriClassifier", "Candidate artifact failed: $artifactName (${e.message})")
+                }
+            }
+            module = loadedModule ?: throw IllegalStateException("Failed to load any mobile PyTorch model artifact.")
         } catch (e: Exception) {
+            android.util.Log.e("AgriClassifier", "Model initialization failed: ${e.message}", e)
             e.printStackTrace()
         }
     }

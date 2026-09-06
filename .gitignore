@@ -43,6 +43,7 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+!data/examples/**
 
 # Experiment checkpoints & runs
 experiments/checkpoints/*
@@ -51,3 +52,12 @@ experiments/runs/*
 !experiments/runs/.gitkeep
 experiments/logs/*
 !experiments/logs/.gitkeep
+
+# Android build outputs & local distributions
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/gradle-dist/
+*.apk
+*.aab

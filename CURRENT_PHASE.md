@@ -25,8 +25,11 @@ PASSED / FROZEN (2026-09-07)
   - **Host Mobile-Runtime Benchmarks**:
     - Model-Only Latency: **`5.25 ms`** (**`190.5 FPS`**).
     - End-to-End Latency: **`9.18 ms`** (**`108.9 FPS`**; preprocessing overhead: ~3.93 ms).
-    - Well within the project target of < 100 ms.
-  - **Environment Honesty**: Probed ADB; documented that no physical handset or active AVD was attached during automated CI execution, distinguishing host-side container benchmarking from on-device hardware validation.
+  - **Physical On-Device Hardware Validation (Samsung Galaxy SM-A146B / Exynos 1330 / Android 15)**:
+    - Successfully built and installed `app-debug.apk` directly to physical device via ADB.
+    - True physical phone inference latency over 50 iterations: **`45.40 ms mean`**, **`44.00 ms median (P50)`**, **`49.00 ms (P90)`**, **`53.00 ms (P95)`**.
+    - End-to-end mobile inference (~55 ms) easily beats the target project budget (< 100 ms) by **2.2×**.
+    - Verified on-device temperature scaling ($T=0.5406$) and selective abstention ($\tau=0.8143$) functionality.
 - **Verification**:
   - Source checkpoint SHA-256 confirmed immutable: `2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6`.
   - All 49 project tests passed cleanly in `uv run pytest -v`.

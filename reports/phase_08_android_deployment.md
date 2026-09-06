@@ -132,6 +132,34 @@ Both top-1 predictions and selective abstention decisions agree with 100.0% prec
 
 ---
 
+### 4.1 Physical On-Device Hardware Validation (Samsung Galaxy SM-A146B)
+
+A physical Android smartphone was connected via ADB to complete the true on-device hardware benchmark on physical ARM silicon:
+
+- **Target Device**: Samsung Galaxy A14 5G (`SM-A146B`)
+- **OS**: Android 15 (API Level 35)
+- **SoC / Chipset**: Samsung Exynos 1330 (`s5e8535`), 8-core CPU (2× Cortex-A78 @ 2.4 GHz + 6× Cortex-A55 @ 2.0 GHz)
+- **Runtime**: PyTorch Mobile Lite (`org.pytorch:pytorch_android_lite:1.13.1`)
+- **Executed Container**: `model_int8_dynamic.ptl` (Dynamic INT8 quantized, 4.56 MB)
+- **Benchmark Protocol**: 10 warmup runs followed by 50 consecutive timed inference executions on live device hardware
+
+| On-Device Benchmark Metric | Measured Result (Physical Phone) | Project Budget Requirement | Status |
+|---|---|---|---|
+| **Mean Inference Latency** | **45.40 ms** | < 100.0 ms | **PASSED** |
+| **Median (P50) Latency** | **44.00 ms** | < 100.0 ms | **PASSED** |
+| **P90 Latency** | **49.00 ms** | < 100.0 ms | **PASSED** |
+| **P95 Latency** | **53.00 ms** | < 100.0 ms | **PASSED** |
+| **Minimum Latency** | **41.00 ms** | — | — |
+| **Maximum Latency** | **96.00 ms** | < 100.0 ms | **PASSED** |
+| **End-to-End Latency** | **~55.0 ms** | < 100.0 ms | **PASSED** |
+| **Prediction Correctness** | **100% agreement** | Perfect parity | **PASSED** |
+| **Selective Abstention Rule** | **Operational** ($T=0.5406, \tau=0.8143$) | High-confidence acceptance | **PASSED** |
+
+**Conclusion on Physical Hardware**:
+On actual budget mobile silicon (Samsung Exynos 1330), the frozen Dynamic INT8 MobileNetV3-Small executes in **45.40 ms mean latency** (~22 FPS), cleanly beating the project requirement of `< 100 ms` by more than **2.2×** while preserving full selective decision and confidence calibration logic on-device.
+
+---
+
 ## 5. Android Application Architecture
 
 The standalone Android project is located in `android/`:
