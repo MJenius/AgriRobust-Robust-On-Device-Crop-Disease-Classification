@@ -216,6 +216,46 @@ phase_05_robustness:
     combined_kd: 0.1576
 
 # ------------------------------------------------------------------------------
+# Phase 6 Calibration & Selective Abstention Parameters and Results
+# ------------------------------------------------------------------------------
+phase_06_calibration:
+  status: "FROZEN"
+  num_bins_ece: 15
+  temperature_scaling:
+    fitting_split: "val"
+    optimization_method: "L-BFGS-B"
+    learned_temperatures:
+      response_kd_champion: 0.5406
+      student_baseline: 1.4962
+      teacher: 0.6387
+  clean_test_metrics:
+    response_kd:
+      accuracy: 0.9930
+      uncalibrated_ece: 0.0200
+      calibrated_ece: 0.0020
+      calibrated_nll: 0.0211
+      calibrated_brier: 0.0104
+      error_detection_auroc: 0.9892
+      canonical_aurc: 0.0001
+      risk_at_95_cov_pct: 0.04
+      risk_at_90_cov_pct: 0.03
+  contrast_sev5_metrics:
+    response_kd:
+      accuracy: 0.9241
+      calibrated_ece: 0.0206
+      error_detection_auroc: 0.9252
+      canonical_aurc: 0.0092
+      risk_at_95_cov_pct: 5.20
+      risk_at_80_cov_pct: 1.35
+  plantdoc_cross_domain_metrics:
+    response_kd:
+      accuracy: 0.1839
+      uncalibrated_ece: 0.3552
+      calibrated_ece: 0.5632
+      error_detection_auroc: 0.5969
+      canonical_aurc: 0.7653
+
+# ------------------------------------------------------------------------------
 # Success Criteria Targets (SOT Section 18) - Targets, not guarantees
 # ------------------------------------------------------------------------------
 targets:

@@ -1,30 +1,26 @@
-# Phase: 5 — Robustness Evaluation
+# Phase: 6 — Uncertainty Calibration and Selective Abstention
 
 ## Objective
-Determine how robust the Teacher (`ConvNeXt-Tiny`), Phase 3 Student Baseline (`MobileNetV3-Small`), and Phase 4 KD models (Response-KD, Feature-KD, Combined-KD) are under realistic visual distribution shifts (brightness, contrast, blur, noise, jpeg compression, resolution, occlusion) and real-world outdoor domain shift on PlantDoc, verifying whether knowledge distillation improves robustness beyond clean PlantVillage performance.
+Determine whether the frozen Response-KD Champion (`MobileNetV3-Small`, 1.56M parameters) can provide reliable confidence estimates and safely abstain on uncertain predictions under distribution shift, evaluating Expected Calibration Error (ECE), Negative Log-Likelihood (NLL), Brier score, Error-Detection AUROC/AUPR, and empirical-sort canonical AURC across clean and shifted benchmarks.
 
 ## Status
 PASSED / FROZEN (2026-09-06)
 
 ## Completed Work
-- Implemented reproducible synthetic corruption benchmark in `src/agrirobust/robustness/corruptions.py` covering 7 corruption families at 5 frozen severities with per-sample deterministic SHA-256 hash seeding (`{sample_id}_{corruption}_{severity}_{seed}`).
-- Verified corruption parameter freeze and deterministic behaviour via unit tests in `tests/test_phase_05_robustness.py` (all 31 project tests passing).
-- Executed full robustness evaluation suite at full test set size (8,129 images per condition) across all 5 models (35 conditions = 175 full evaluation passes) with per-condition intermediate checkpointing.
-- Computed Baseline-Normalized Relative Corruption Error (RCE) and mean RCE (mRCE) relative to the Student Baseline:
-  - **Response-KD Champion**: **`mRCE = 79.87%`** (a 20.13% systematic error reduction across all corruptions relative to the uncompressed baseline).
-  - **Teacher**: `mRCE = 95.81%`
-  - **Feature-KD**: `mRCE = 96.12%`
-  - **Combined-KD**: `mRCE = 81.75%`
-- Discovered massive distillation cushions against high-frequency noise and extreme dynamic range shifts:
-  - **Gaussian Noise ($\sigma=0.06$)**: Student Baseline collapsed from 0.9962 to 0.4673 F1 (50.17% Acc), while Response-KD maintained **0.7706 F1 (80.10% Acc)** (+29.93% absolute accuracy advantage).
-  - **Severe Defocus Blur ($\sigma=7.0$)**: Student Baseline suffered catastrophic breakdown (4.18% Acc), while distilled models retained 24.36% (Response-KD) to 29.68% (Combined-KD) Acc.
-  - **Brightness / Contrast blowout**: Response-KD maintained 92.79% and 92.41% accuracy at severity 5, conferring +13.15% and +18.42% accuracy advantages over the baseline.
-- Evaluated natural domain shift on 8,883 out-of-domain PlantDoc field crops:
-  - Teacher: 21.05% Acc / 0.2062 Macro F1
-  - Student Baseline: 11.62% Acc / 0.1298 Macro F1
-  - Response-KD: **18.39% Acc / 0.1791 Macro F1** (retaining 86.86% of the Teacher's performance).
-- Generated master metrics artifact `experiments/runs/P05_robustness_evaluation/metrics.json` and compiled comprehensive Phase 5 report in `reports/phase_05_robustness.md`.
+- Implemented modular calibration infrastructure:
+  - `src/agrirobust/calibration/metrics.py`: Standard 15-bin ECE, multi-class Brier score, NLL, and Error-Detection AUROC/AUPR using confidence to separate failures from correct predictions.
+  - `src/agrirobust/calibration/temperature.py`: Post-hoc temperature scaling fitted via L-BFGS-B maximum likelihood strictly on the canonical validation split.
+  - `src/agrirobust/calibration/selective.py`: Confidence-thresholded selective prediction, canonical empirical-sort AURC, and fixed operating-point extraction (95%, 90%, 80% coverage).
+- Evaluated 3 models across 5 target domains (Clean Test, PlantDoc Field Crops, Gaussian Noise s5, Defocus Blur s5, Contrast s5):
+  - **In-Domain Calibration**: On Clean Test, Response-KD ECE reduced by an order of magnitude: **`0.0200 -> 0.0020 (0.20%)`** with NLL dropping from 0.0378 to 0.0211.
+  - **Out-of-Domain Calibration Divergence**: Under severe natural shift (PlantDoc), accuracy drops to 18.39% while confidence remains ~74–80%, demonstrating that clean validation temperature scaling cannot account for out-of-domain degradation.
+  - **Error Detection Quality**: Incorrect predictions consistently exhibited lower confidence than correct predictions across all domains (Clean Test Error-AUROC = **`0.9892`**, Contrast s5 Error-AUROC = **`0.9252`**, Blur s5 Error-AUROC = **`0.7888`**).
+  - **Selective Risk Reduction**: Under Contrast Severity 5, abstaining on the lowest 20% confident samples dropped operational risk from **`7.59% down to 1.35%`** (an 82.2% risk reduction, with AURC = **`0.0092`** vs Student Baseline's 0.0837).
+  - On Clean Test, abstaining on just 5% of samples reduced operational risk from 0.70% to **`0.04%`** (AURC = **`0.0001`**).
+- Verified zero data leakage: Temperature scaling ($T = 0.5406$) and validation threshold $\tau_{\text{val}}$ were optimized strictly on validation data.
+- Built comprehensive unit test suite in `tests/test_phase_06_calibration.py` (all 37 unit tests pass cleanly).
+- Published detailed Phase 6 report in `reports/phase_06_calibration.md` and saved master metrics in `experiments/runs/P06_calibration_abstention/metrics.json`.
 
 ## Next Phase
-Phase 6 — Uncertainty Calibration & Selective Abstention
+Phase 7 — Deployment-Aware Compression (Quantization & Pruning)
 
