@@ -168,12 +168,12 @@ def test_project_reproducibility_policy():
 
 
 def test_no_premature_phase_implementations():
-    """Verify that no later phase model weights (distillation/quantized) or Android deployment code leaked into the repository."""
+    """Verify that no premature phase model weights (quantization) or Android deployment code leaked into the repository."""
     root = get_project_root()
-    distill_quant_checkpoints = list(root.glob("experiments/**/*kd*.pt")) + list(
-        root.glob("experiments/**/*distill*.pt")
-    ) + list(root.glob("experiments/**/*quant*.pt"))
-    assert len(distill_quant_checkpoints) == 0, f"Found unexpected distillation/quant weights: {distill_quant_checkpoints}"
+    quant_checkpoints = list(root.glob("experiments/**/*quant*.pt")) + list(
+        root.glob("experiments/**/*ptq*.pt")
+    ) + list(root.glob("experiments/**/*int8*.pt"))
+    assert len(quant_checkpoints) == 0, f"Found unexpected quantization weights: {quant_checkpoints}"
 
     # Ensure Android build gradle / apk files do not exist prematurely
     android_builds = list((root / "android").glob("**/*.gradle*")) + list(

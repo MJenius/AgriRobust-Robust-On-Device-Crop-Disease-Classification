@@ -134,6 +134,58 @@ training:
     primary_seed: 42
 
 # ------------------------------------------------------------------------------
+# Distillation Configurations & Checkpoints Frozen in Phase 4
+# ------------------------------------------------------------------------------
+distillation:
+  teacher_reference_checkpoint: "experiments/checkpoints/P02_teacher_convnext_tiny_plantvillage_s42.pt"
+  student_baseline_checkpoint: "experiments/checkpoints/P03_student_mobilenetv3_small_plantvillage_s42.pt"
+  teacher_cross_macro_f1: 0.2073
+  student_baseline_cross_macro_f1: 0.1298
+  cross_domain_gap_baseline: 0.0775
+
+  ablations:
+    response:
+      mode: "response"
+      temperature: 4.0
+      alpha: 0.5
+      epochs: 8
+      checkpoint_path: "experiments/checkpoints/P04_student_kd_response_plantvillage_s42.pt"
+      checkpoint_sha256: "2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6"
+      clean_macro_f1: 0.9884
+      plantdoc_cross_macro_f1: 0.1791
+      gap_recovered_pct: 63.61
+      relative_gain_over_student_pct: 37.98
+
+    feature:
+      mode: "feature"
+      beta: 0.5
+      student_dim: 576
+      teacher_dim: 768
+      epochs: 8
+      checkpoint_path: "experiments/checkpoints/P04_student_kd_feature_plantvillage_s42.pt"
+      checkpoint_sha256: "f41bc3ecd9e36076f7ba100194156cb79e567f9b9fb3a9d7b39dcf20c497681f"
+      clean_macro_f1: 0.9955
+      plantdoc_cross_macro_f1: 0.1349
+      gap_recovered_pct: 6.58
+      relative_gain_over_student_pct: 3.93
+
+    combined:
+      mode: "combined"
+      temperature: 4.0
+      alpha: 0.5
+      beta: 0.5
+      epochs: 8
+      checkpoint_path: "experiments/checkpoints/P04_student_kd_combined_plantvillage_s42.pt"
+      checkpoint_sha256: "5bf8a40a6762f282e88d52d48944d24203f52eac36600d8d37fc97c7f276a4fa"
+      clean_macro_f1: 0.9885
+      plantdoc_cross_macro_f1: 0.1576
+      gap_recovered_pct: 35.87
+      relative_gain_over_student_pct: 21.42
+
+  champion_distillation_model: "response"
+  champion_checkpoint: "experiments/checkpoints/P04_student_kd_response_plantvillage_s42.pt"
+
+# ------------------------------------------------------------------------------
 # Success Criteria Targets (SOT Section 18) - Targets, not guarantees
 # ------------------------------------------------------------------------------
 targets:
