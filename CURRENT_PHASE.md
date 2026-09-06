@@ -1,26 +1,30 @@
-# Phase: 4 — Knowledge Distillation
+# Phase: 5 — Robustness Evaluation
 
 ## Objective
-Determine whether knowledge distillation from the high-capacity frozen Teacher (`ConvNeXt-Tiny`, 27.85M params) into the compact Student (`MobileNetV3-Small`, 1.56M params) can recover the student's lost cross-domain performance on PlantDoc while preserving its compact architecture, memory footprint, and low CPU latency.
+Determine how robust the Teacher (`ConvNeXt-Tiny`), Phase 3 Student Baseline (`MobileNetV3-Small`), and Phase 4 KD models (Response-KD, Feature-KD, Combined-KD) are under realistic visual distribution shifts (brightness, contrast, blur, noise, jpeg compression, resolution, occlusion) and real-world outdoor domain shift on PlantDoc, verifying whether knowledge distillation improves robustness beyond clean PlantVillage performance.
 
 ## Status
 PASSED / FROZEN (2026-09-06)
 
 ## Completed Work
-- Implemented and validated distillation loss formulations adhering strictly to PyTorch's KL divergence direction:
-  - **Response KD**: $\mathcal{L}_{\text{CE}} + \alpha T^2 \cdot \text{KLDiv}(\log\text{softmax}(z_s/T), \text{softmax}(z_t/T))$ with $T=4.0, \alpha=0.5$.
-  - **Feature Hint KD**: $\mathcal{L}_{\text{CE}} + \beta \cdot \text{MSE}(\text{Proj}_{576 \to 768}(f_s), f_t)$ with projection layer included in optimizer but excluded from deployment checkpoints.
-  - **Combined KD**: Composite response and feature hint supervision.
-- Verified tensor dimensions in code before launch: Student pooled features are confirmed 576-D and Teacher pooled features are confirmed 768-D.
-- Precomputed and cached full Teacher targets (logits and pooled features) for train and validation splits to eliminate redundant CPU forward passes.
-- Executed the complete controlled Phase 4 distillation ablation suite across all 3 paradigms under identical data splits and training budget (8 epochs per ablation, AdamW, batch size 128).
-- Benchmarked all distilled checkpoints on PlantVillage clean test and PlantDoc cross-domain test:
-  - **Response KD (Champion)**: PlantDoc Macro F1 = **`0.1791`** (recovering **63.61% of the lost cross-domain gap**, a **+37.98% relative improvement** over the uncompressed student baseline of `0.1298`).
-  - **Combined KD**: PlantDoc Macro F1 = **`0.1576`** (recovering 35.87% of the gap).
-  - **Feature KD**: PlantDoc Macro F1 = **`0.1349`** (recovering 6.58% of the gap; showed strong clean validation accuracy of 99.75% but rigid intermediate geometric alignment limited cross-domain transfer).
-- Verified deployment purity: all serialized checkpoints contain only the pure `MobileNetV3-Small` architecture (**1,556,806 parameters**, **6.07 MB** checkpoint size, CPU latency **17.83 ms**).
-- Added comprehensive unit tests in `tests/test_phase_04_distillation.py`; verified that all **27/27 tests** in the project test suite pass cleanly (`uv run pytest`).
-- Published Phase 4 Report in `reports/phase_04_distillation.md`, updated `configs/project.yaml`, and stored metrics in `experiments/runs/P04_knowledge_distillation/metrics.json`.
+- Implemented reproducible synthetic corruption benchmark in `src/agrirobust/robustness/corruptions.py` covering 7 corruption families at 5 frozen severities with per-sample deterministic SHA-256 hash seeding (`{sample_id}_{corruption}_{severity}_{seed}`).
+- Verified corruption parameter freeze and deterministic behaviour via unit tests in `tests/test_phase_05_robustness.py` (all 31 project tests passing).
+- Executed full robustness evaluation suite at full test set size (8,129 images per condition) across all 5 models (35 conditions = 175 full evaluation passes) with per-condition intermediate checkpointing.
+- Computed Baseline-Normalized Relative Corruption Error (RCE) and mean RCE (mRCE) relative to the Student Baseline:
+  - **Response-KD Champion**: **`mRCE = 79.87%`** (a 20.13% systematic error reduction across all corruptions relative to the uncompressed baseline).
+  - **Teacher**: `mRCE = 95.81%`
+  - **Feature-KD**: `mRCE = 96.12%`
+  - **Combined-KD**: `mRCE = 81.75%`
+- Discovered massive distillation cushions against high-frequency noise and extreme dynamic range shifts:
+  - **Gaussian Noise ($\sigma=0.06$)**: Student Baseline collapsed from 0.9962 to 0.4673 F1 (50.17% Acc), while Response-KD maintained **0.7706 F1 (80.10% Acc)** (+29.93% absolute accuracy advantage).
+  - **Severe Defocus Blur ($\sigma=7.0$)**: Student Baseline suffered catastrophic breakdown (4.18% Acc), while distilled models retained 24.36% (Response-KD) to 29.68% (Combined-KD) Acc.
+  - **Brightness / Contrast blowout**: Response-KD maintained 92.79% and 92.41% accuracy at severity 5, conferring +13.15% and +18.42% accuracy advantages over the baseline.
+- Evaluated natural domain shift on 8,883 out-of-domain PlantDoc field crops:
+  - Teacher: 21.05% Acc / 0.2062 Macro F1
+  - Student Baseline: 11.62% Acc / 0.1298 Macro F1
+  - Response-KD: **18.39% Acc / 0.1791 Macro F1** (retaining 86.86% of the Teacher's performance).
+- Generated master metrics artifact `experiments/runs/P05_robustness_evaluation/metrics.json` and compiled comprehensive Phase 5 report in `reports/phase_05_robustness.md`.
 
 ## Next Phase
-Phase 5 — Robustness Evaluation
+Phase 6 — Uncertainty Calibration & Selective Abstention
+

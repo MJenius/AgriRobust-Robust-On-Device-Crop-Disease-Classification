@@ -186,6 +186,36 @@ distillation:
   champion_checkpoint: "experiments/checkpoints/P04_student_kd_response_plantvillage_s42.pt"
 
 # ------------------------------------------------------------------------------
+# Phase 5 Robustness Evaluation Parameters and Champion Results
+# ------------------------------------------------------------------------------
+phase_05_robustness:
+  status: "FROZEN"
+  benchmark_dataset_size: 8129
+  plantdoc_crop_dataset_size: 8883
+  corruption_families:
+    - "brightness"
+    - "contrast"
+    - "defocus_blur"
+    - "gaussian_noise"
+    - "jpeg_compression"
+    - "resolution"
+    - "occlusion"
+  severities: [1, 2, 3, 4, 5]
+  normalization_reference: "student_baseline"
+  metrics_summary:
+    teacher_mrce_pct: 95.81
+    student_baseline_mrce_pct: 100.00
+    response_kd_champion_mrce_pct: 79.87
+    feature_kd_mrce_pct: 96.12
+    combined_kd_mrce_pct: 81.75
+  plantdoc_cross_domain_macro_f1:
+    teacher: 0.2062
+    student_baseline: 0.1298
+    response_kd_champion: 0.1791
+    feature_kd: 0.1349
+    combined_kd: 0.1576
+
+# ------------------------------------------------------------------------------
 # Success Criteria Targets (SOT Section 18) - Targets, not guarantees
 # ------------------------------------------------------------------------------
 targets:
