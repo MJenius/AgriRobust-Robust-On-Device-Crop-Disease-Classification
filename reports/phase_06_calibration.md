@@ -23,11 +23,10 @@ Phase 6 evaluates whether post-training calibration and selective prediction can
    - **In-domain (Clean Test):** Yes, dramatically. Temperature scaling with the validation-learned parameter ($T = 0.5406$) reduced ECE by an order of magnitude: from **0.0200 down to 0.0020 (0.20%)**, while lowering NLL from 0.0378 to 0.0211.
    - For Teacher ($T = 0.6387$), in-domain ECE dropped from **0.0281 to 0.0038**.
 3. **Does calibration generalize from PlantVillage validation data to PlantDoc and corruptions?**
-   - **No, calibration does not automatically transfer to out-of-domain distribution shifts.**
-   - Under severe natural distribution shift (PlantDoc), all models become overconfident relative to their degraded accuracy:
-     - Response-KD accuracy drops to 18.39%, but mean confidence remains high (~74–80%), resulting in calibrated **ECE = 0.5632**.
-     - Temperature scaling learned on clean validation data ($T < 1.0$) sharpens logits, which is optimal for clean in-domain calibration but exacerbates overconfidence when models face unseen distribution shifts.
-   - This empirical divergence between in-domain calibration gains and out-of-domain overconfidence is a central finding of Phase 6.
+   - **Temperature scaling learned on clean in-domain validation data did not provide reliable calibration under the evaluated out-of-domain shifts, and in some cases increased overconfidence.**
+   - The learned temperature ($T = 0.5406 < 1.0$) reflects that the clean validation model was relatively under-confident, so logit sharpening effectively minimized in-domain NLL and ECE.
+   - However, that same sharpening proved harmful when the underlying predictions became degraded under distribution shift: on PlantDoc, accuracy dropped to 18.39% while confidence remained high (~74–80%), resulting in elevated post-scaling ECE (**0.5632**).
+   - This empirical contrast between in-domain calibration gains and out-of-domain overconfidence is a central finding of Phase 6.
 4. **Are incorrect predictions associated with lower confidence?**
    - **Yes, consistently.** Across all evaluated domains, incorrect predictions have lower mean and median confidence than correct predictions:
      - On Clean Test: Correct mean confidence = 0.9944 vs. Incorrect mean confidence = 0.7164 (**AUROC for Error Detection = 0.9892**).
@@ -139,11 +138,11 @@ Operating points across practical coverage levels ($\phi \approx 95\%, 90\%, 80\
 
 ## 4. Scientific Discussion & Architectural Insights
 
-1. **Why In-Domain Calibration Gains Do Not Transfer to Unseen Shifts**:
+1. **Why In-Domain Calibration Gains Do Not Transfer to Evaluated Shifts**:
    - On the PlantVillage validation set, the model's logits are under-confident relative to its near-perfect accuracy, resulting in a learned temperature $T = 0.5406 < 1.0$.
    - This sharpening factor successfully drives in-domain ECE down to **0.0020 (0.20%)**.
-   - However, when the model faces out-of-domain PlantDoc crops or severe noise, where accuracy drops to 11–18%, the sharpened logits amplify the probabilities of top-1 incorrect classes, raising out-of-domain ECE.
-   - **Takeaway**: Temperature scaling fitted on clean validation data calibrates in-domain probabilities but cannot account for semantic or sensor distribution shifts that degrade accuracy out-of-distribution.
+   - However, when the model faces out-of-domain PlantDoc crops or severe noise, where accuracy drops to 11–18%, the sharpened logits amplify the probabilities of top-1 incorrect classes, raising out-of-domain ECE and overconfidence.
+   - **Takeaway**: Temperature scaling learned on clean in-domain validation data did not provide reliable calibration under the evaluated out-of-domain shifts, and in some cases increased overconfidence.
 2. **Selective Abstention Effectively Filters Out Errors**:
    - Under moderate-to-severe degradation where accuracy remains reasonable (e.g., Contrast Severity 5, Acc = 92.41%), selective prediction is highly effective: dropping coverage from 100% to 80% slashes operational risk from **7.59% down to 1.35% (an 82.2% error reduction)**.
    - In Clean Test, abstaining on just 5% of samples removes **94% of all errors**, reducing risk to **0.04%**.
