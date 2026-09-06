@@ -16,7 +16,7 @@ Phase 7 evaluated post-training deployment compression techniques on the frozen 
 The empirical conclusions are definitive:
 
 1. **Dynamic INT8 Quantization is the Clear Champion**:
-   - Quantizing the classifier `nn.Linear` layers (`576 -> 1024 -> 38`) to `qint8` reduced serialized checkpoint size by **29.08%** (from **6.07 MB** down to **4.30 MB**), a compression ratio of **1.41x**.
+   - Quantizing the classifier `nn.Linear` layers (`576 -> 1024 -> 38`) to `qint8` reduced serialized checkpoint size by **29.08%** (from **6.07 MB** down to **4.30 MB**), achieving a **1.41x storage compression / size reduction** (not a speedup, as CPU latency was 6.74 ms vs FP32's 6.59 ms).
    - Top-1 accuracy, Macro F1, and balanced accuracy were perfectly retained across all evaluated conditions: **100.03%** retention on PlantVillage Clean Test (`0.9887` vs `0.9884`), and **100.07%** retention on PlantDoc Field Crops (`0.1368` vs `0.1367`).
    - Under severe distribution shifts (Gaussian Noise s5, Defocus Blur s5, and Contrast s5), Dynamic INT8 exhibited zero degradation ($\Delta \text{Macro F1} < 0.0007$).
    - Calibration and selective prediction behavior transferred seamlessly with frozen $T_{\text{cal}} = 0.5406$: Clean Test calibrated ECE was **0.0016** (vs FP32 **0.0020**), and canonical AURC remained identical at **0.0001**.
@@ -115,9 +115,9 @@ Selective prediction behavior is perfectly preserved in `P07_int8_dynamic`: unde
 ## 4. Scientific Answers to Phase 7 Core Questions
 
 1. **Can INT8 compression materially reduce the 6.07 MB Response-KD footprint?**  
-   **Yes.** Dynamic quantization of the linear classification head reduces serialized model size from **6.07 MB to 4.30 MB** (a **29.08% reduction**, 1.41x compression ratio) while keeping parameter fidelity intact.
+   **Yes.** Dynamic quantization of the linear classification head reduces serialized model size from **6.07 MB to 4.30 MB** (a **29.08% reduction**, representing a **1.41x storage compression / size reduction**) while keeping parameter fidelity intact.
 2. **Does quantization provide an actual CPU latency benefit in the tested environment?**  
-   **No.** In standard PyTorch CPU execution, dynamic quantization of linear layers produced an identical latency profile (**6.74 ms** vs FP32's **6.59 ms**, ~148–152 FPS). Latency in `MobileNetV3-Small` is heavily dominated by depthwise separable convolutions rather than the linear head.
+   **No.** In standard PyTorch CPU execution, dynamic quantization of linear layers produced an identical latency profile (**6.74 ms** vs FP32's **6.59 ms**, ~148–152 FPS; thus 1.41x is purely storage compression, not a runtime speedup). Latency in `MobileNetV3-Small` is heavily dominated by depthwise separable convolutions rather than the linear head.
 3. **How much clean and PlantDoc Macro F1 is retained after compression?**  
    **100.03%** of Clean Macro F1 (0.9887 vs 0.9884) and **100.07%** of PlantDoc Macro F1 (0.1368 vs 0.1367) are retained by Dynamic INT8.
 4. **Does compression disproportionately harm severe corruption robustness?**  
