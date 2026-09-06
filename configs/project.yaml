@@ -256,6 +256,39 @@ phase_06_calibration:
       canonical_aurc: 0.7653
 
 # ------------------------------------------------------------------------------
+# Phase 7 Deployment-Aware Compression Parameters and Results
+# ------------------------------------------------------------------------------
+phase_07_compression:
+  status: "FROZEN"
+  source_champion_checkpoint: "experiments/checkpoints/P04_student_kd_response_plantvillage_s42.pt"
+  source_checkpoint_sha256: "2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6"
+  runtime_environment:
+    pytorch_version: "2.14.0+cpu"
+    quantized_engine: "onednn"
+    device: "cpu"
+  static_quantization_probe:
+    status: "NOT_SUPPORTED"
+    reason: "onednn CPU eager backend lacks quantized::conv2d.new kernel"
+  candidates_evaluated:
+    - "P07_fp32_reference"
+    - "P07_int8_dynamic"
+    - "P07_pruned_20"
+    - "P07_pruned_40"
+    - "P07_pruned_60"
+  selected_phase_08_champion:
+    candidate_id: "P07_int8_dynamic"
+    compression_method: "Dynamic INT8 (nn.Linear classifier)"
+    artifact_path: "experiments/runs/P07_deployment_compression/artifacts/model_int8_dynamic.pt"
+    size_mb: 4.302
+    size_reduction_pct: 29.08
+    compression_ratio: 1.41
+    mean_latency_ms: 6.74
+    throughput_fps: 148.41
+    clean_test_retention_pct: 100.03
+    plantdoc_retention_pct: 100.07
+    calibrated_ece: 0.0016
+
+# ------------------------------------------------------------------------------
 # Success Criteria Targets (SOT Section 18) - Targets, not guarantees
 # ------------------------------------------------------------------------------
 targets:

@@ -1,26 +1,38 @@
-# Phase: 6 — Uncertainty Calibration and Selective Abstention
+# Phase: 7 — Deployment-Aware Compression (Quantization & Pruning)
 
 ## Objective
-Determine whether the frozen Response-KD Champion (`MobileNetV3-Small`, 1.56M parameters) can provide reliable confidence estimates and safely abstain on uncertain predictions under distribution shift, evaluating Expected Calibration Error (ECE), Negative Log-Likelihood (NLL), Brier score, Error-Detection AUROC/AUPR, and empirical-sort canonical AURC across clean and shifted benchmarks.
+Determine how much model size and inference efficiency can be gained through post-training deployment compression (dynamic quantization, eager static PTQ compatibility probe, and unstructured pruning) on the frozen Phase 4 Response-KD Champion (`MobileNetV3-Small`, 1.56M parameters, 6.07 MB FP32 baseline) before meaningful degradation appears in clean accuracy, distribution-shift robustness, and selective prediction reliability.
 
 ## Status
-PASSED / FROZEN (2026-09-06)
+PASSED / FROZEN (2026-09-07)
 
 ## Completed Work
-- Implemented modular calibration infrastructure:
-  - `src/agrirobust/calibration/metrics.py`: Standard 15-bin ECE, multi-class Brier score, NLL, and Error-Detection AUROC/AUPR using confidence to separate failures from correct predictions.
-  - `src/agrirobust/calibration/temperature.py`: Post-hoc temperature scaling fitted via L-BFGS-B maximum likelihood strictly on the canonical validation split.
-  - `src/agrirobust/calibration/selective.py`: Confidence-thresholded selective prediction, canonical empirical-sort AURC, and fixed operating-point extraction (95%, 90%, 80% coverage).
-- Evaluated 3 models across 5 target domains (Clean Test, PlantDoc Field Crops, Gaussian Noise s5, Defocus Blur s5, Contrast s5):
-  - **In-Domain Calibration**: On Clean Test, Response-KD ECE reduced by an order of magnitude: **`0.0200 -> 0.0020 (0.20%)`** with NLL dropping from 0.0378 to 0.0211.
-  - **Out-of-Domain Calibration Divergence**: Temperature scaling learned on clean in-domain validation data did not provide reliable calibration under the evaluated out-of-domain shifts, and in some cases increased overconfidence. On PlantDoc, accuracy dropped to 18.39% while confidence remained ~74–80% (calibrated ECE = 0.5632), demonstrating that in-domain logit sharpening ($T=0.5406$) can amplify overconfidence when predictions degrade under shift.
-  - **Error Detection Quality**: Incorrect predictions consistently exhibited lower confidence than correct predictions across all domains (Clean Test Error-AUROC = **`0.9892`**, Contrast s5 Error-AUROC = **`0.9252`**, Blur s5 Error-AUROC = **`0.7888`**).
-  - **Selective Risk Reduction**: Under Contrast Severity 5, abstaining on the lowest 20% confident samples dropped operational risk from **`7.59% down to 1.35%`** (an 82.2% risk reduction, with AURC = **`0.0092`** vs Student Baseline's 0.0837).
-  - On Clean Test, abstaining on just 5% of samples reduced operational risk from 0.70% to **`0.04%`** (AURC = **`0.0001`**).
-- Verified zero data leakage: Temperature scaling ($T = 0.5406$) and validation threshold $\tau_{\text{val}}$ were optimized strictly on validation data.
-- Built comprehensive unit test suite in `tests/test_phase_06_calibration.py` (all 37 unit tests pass cleanly).
-- Published detailed Phase 6 report in `reports/phase_06_calibration.md` and saved master metrics in `experiments/runs/P06_calibration_abstention/metrics.json`.
+- **Modular Compression Suite Implemented**:
+  - `src/agrirobust/compression/quantization.py`: Dynamic INT8 quantization wrapper, eager static PTQ environment compatibility probe, and model serialization/deserialization.
+  - `src/agrirobust/compression/pruning.py`: Deterministic L1 unstructured pruning with permanent mask removal and layer-wise/global sparsity calculation.
+  - `src/agrirobust/compression/benchmark.py`: Standardized single-image CPU latency/throughput benchmarker and model footprint measurement.
+- **Experimental Pipeline Executed**:
+  - `experiments/scripts/run_compression_suite.py`: Full evaluation of 5 candidates across 5 benchmark domains:
+    1. PlantVillage Clean Test (8,129 images)
+    2. PlantDoc Field Crops Cross-Domain (8,883 crops)
+    3. Gaussian Noise Severity 5
+    4. Defocus Blur Severity 5
+    5. Contrast Severity 5
+  - Evaluated with frozen Phase 6 calibration parameters ($T_{\text{cal}} = 0.5406$, $\tau_{\text{val}} = 0.8143$).
+- **Key Scientific Findings**:
+  - **Dynamic INT8 Quantization**: Quantizing classifier linear layers to `qint8` reduced serialized model size by **`29.08%`** (from **`6.07 MB`** down to **`4.30 MB`**, a **`1.41x`** compression ratio).
+  - **Zero Metric Loss**: Dynamic INT8 retained **`100.03%`** of clean Macro F1 (`0.9887` vs `0.9884`), **`100.07%`** of PlantDoc cross-domain Macro F1 (`0.1368` vs `0.1367`), and matched FP32 across all stress corruptions (Contrast s5 Macro F1: `0.8904` vs `0.8905`).
+  - **Calibration Preservation**: Transferred frozen validation temperature ($T=0.5406$) achieved an outstanding calibrated ECE of **`0.0016`** (vs FP32 `0.0020`), with identical canonical AURC (**`0.0001`**).
+  - **Static Quantization Environment Probe**: Probed eager static quantization on PyTorch CPU `onednn`; transparently documented backend limitation (`quantized::conv2d.new` unavailable on eager CPU) as `NOT SUPPORTED / NOT EXECUTED`.
+  - **Pruning Reality**: Pruning at 20%, 40%, and 60% sparsity achieved nominal sparsity only. Due to dense CPU BLAS kernels, latency did not improve (7.09–8.58 ms) and serialized file sizes remained unchanged (6.065 MB). At 60% sparsity, severe noise accuracy collapsed (11.28% -> 8.49%).
+- **Phase 8 Candidate Selected**:
+  - Champion: `P07_int8_dynamic`
+  - Checkpoint: `experiments/runs/P07_deployment_compression/artifacts/model_int8_dynamic.pt` (4.30 MB)
+- **Verification**:
+  - FP32 source checkpoint verified immutable (`SHA-256: 2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6`).
+  - All 43 project tests passed cleanly in `uv run pytest -v`.
+  - Master metrics exported to `experiments/runs/P07_deployment_compression/metrics.json`.
+  - Comprehensive scientific report published in `reports/phase_07_compression.md`.
 
 ## Next Phase
-Phase 7 — Deployment-Aware Compression (Quantization & Pruning)
-
+Phase 8 — On-Device Deployment and Mobile Runtime Validation

@@ -168,14 +168,10 @@ def test_project_reproducibility_policy():
 
 
 def test_no_premature_phase_implementations():
-    """Verify that no premature phase model weights (quantization) or Android deployment code leaked into the repository."""
+    """Verify that no premature phase deployment artifacts (such as Android deployment code) leaked into the repository."""
     root = get_project_root()
-    quant_checkpoints = list(root.glob("experiments/**/*quant*.pt")) + list(
-        root.glob("experiments/**/*ptq*.pt")
-    ) + list(root.glob("experiments/**/*int8*.pt"))
-    assert len(quant_checkpoints) == 0, f"Found unexpected quantization weights: {quant_checkpoints}"
-
-    # Ensure Android build gradle / apk files do not exist prematurely
+    # Note: Phase 7 produces authorized quantization artifacts in experiments/runs/P07_deployment_compression/artifacts/
+    # Premature check ensures Android build gradle / apk files do not exist prematurely before Phase 8.
     android_builds = list((root / "android").glob("**/*.gradle*")) + list(
         (root / "android").glob("**/*.apk")
     )
