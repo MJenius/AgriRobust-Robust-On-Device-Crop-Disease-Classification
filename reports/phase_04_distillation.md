@@ -24,10 +24,10 @@ Phase 4 evaluates whether knowledge distillation (KD) from the high-capacity fro
    - **Response KD (Logit/KL)**: PlantDoc Macro F1 = **`0.1791`** (63.61% gap recovered). Soft teacher probability targets provided rich dark knowledge and inter-class relationship signals that regularized student representations against laboratory overfitting.
    - **Combined KD (Logit + Feature Hint)**: PlantDoc Macro F1 = **`0.1576`** (35.87% gap recovered, +21.42% relative gain).
    - **Feature KD (MSE Hint Projection $576 \to 768$)**: PlantDoc Macro F1 = **`0.1349`** (6.58% gap recovered, +3.93% relative gain). Forcing intermediate pooled features from a 1.56M parameter MobileNet into the 768-D geometry of ConvNeXt-Tiny proved overly rigid, yielding near-perfect clean validation performance (`0.9955 Clean F1`) but poor out-of-domain transfer compared to soft response distillation.
-3. **Deployment Purity & Zero Runtime Overhead**:
+3. **Deployment Purity & Inference Computation**:
    - All projection adapter heads used during feature distillation were cleanly stripped at checkpoint serialization.
    - The saved deployment models contain **only the pure MobileNetV3-Small architecture**: exactly **1,556,806 parameters** and **6.07 MB checkpoint file size** (substantially below SOT Target A $\le 10\%$ and Target B $\le 15\text{ MB}$).
-   - CPU inference latency remains **`17.83 ms`** (mean) with a **`4.2x` speedup** over the Teacher.
+   - KD does not add inference parameters or architectural computation; measured latency remains within benchmark variance of the baseline (mean `17.83 ms` vs Phase 3 baseline's `18.41 ms`).
 
 ---
 
@@ -64,7 +64,7 @@ Distillation was executed on the canonical 38-class PlantVillage training split 
 | **Response KD** ($T=4, \alpha=0.5$) *(Champion)* | 99.30% | 0.9884 | **18.39%** | **0.1791** | **+0.0493** | **+63.61%** | **1.56M** | **6.07 MB** | **17.83 ms** |
 
 > [!IMPORTANT]
-> **Scientific Uncertainty Addressed**: As noted prior to implementation, distillation under identical source training data is not guaranteed to improve cross-domain performance. Here, the experimental result is unambiguously positive: **Response KD successfully transfers generalizable representation geometry from the Teacher, raising cross-domain Macro F1 from 0.1298 to 0.1791 (+37.98% relative improvement)** while retaining 99.30% clean accuracy.
+> **Scientific Uncertainty Addressed**: As noted prior to implementation, distillation under identical source training data is not guaranteed to improve cross-domain performance. Here, the experimental result is unambiguously positive: **Response KD substantially improved cross-domain performance, consistent with the hypothesis that teacher soft targets provide useful inter-class similarity information**, raising cross-domain Macro F1 from 0.1298 to 0.1791 (+37.98% relative improvement) while retaining 99.30% clean accuracy.
 
 ---
 
