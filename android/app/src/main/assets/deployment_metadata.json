@@ -1,0 +1,72 @@
+{
+  "project": "AgriRobust",
+  "phase": 8,
+  "role": "On-Device Android Deployment Bundle",
+  "source_checkpoint": "P04_student_kd_response_plantvillage_s42.pt",
+  "source_checkpoint_sha256": "2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6",
+  "compression_method": "Dynamic INT8 (classifier Linear)",
+  "architecture": "MobileNetV3-Small",
+  "num_classes": 38,
+  "input_shape": [
+    1,
+    3,
+    224,
+    224
+  ],
+  "artifact_file": "model_int8_dynamic.pt",
+  "artifact_sha256": "500ea8b7ed942f16ae59da60b5cab262aebb46f279b2d936bc8f7edf45617200",
+  "artifact_size_bytes": 4781462,
+  "artifact_size_mb": 4.56,
+  "calibration": {
+    "temperature": 0.5406,
+    "source_phase": "Phase 6",
+    "fitting_split": "PlantVillage canonical validation split",
+    "formula": "p = softmax(logits / 0.5406)"
+  },
+  "selective_abstention": {
+    "validation_threshold_tau": 0.8143,
+    "source_phase": "Phase 6",
+    "action_rule": "If max(p) >= 0.8143 -> ACCEPT, else -> ABSTAIN"
+  },
+  "preprocessing": {
+    "target_width": 224,
+    "target_height": 224,
+    "resize_mode": "direct_resize_224x224",
+    "color_space": "RGB",
+    "pixel_scaling": 0.00392156862745098,
+    "tensor_layout": "CHW",
+    "channel_order": "RGB",
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "interpolation": "BILINEAR"
+  },
+  "runtime_dependencies": {
+    "android_runtime": "org.pytorch:pytorch_android_lite:1.13.1",
+    "required_operators": [
+      "aten::_convolution",
+      "aten::adaptive_avg_pool2d",
+      "aten::add_.Tensor",
+      "aten::batch_norm",
+      "aten::dropout",
+      "aten::flatten.using_ints",
+      "aten::hardsigmoid",
+      "aten::hardswish",
+      "aten::hardswish_",
+      "aten::mul.Tensor",
+      "aten::relu",
+      "aten::relu_",
+      "aten::to.dtype",
+      "quantized::linear_dynamic"
+    ]
+  }
+}

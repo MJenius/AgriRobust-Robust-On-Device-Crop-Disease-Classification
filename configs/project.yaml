@@ -289,6 +289,47 @@ phase_07_compression:
     calibrated_ece: 0.0016
 
 # ------------------------------------------------------------------------------
+# Phase 8 Android Deployment & On-Device Validation Parameters and Results
+# ------------------------------------------------------------------------------
+phase_08_android_deployment:
+  status: "FROZEN"
+  source_champion_checkpoint: "experiments/checkpoints/P04_student_kd_response_plantvillage_s42.pt"
+  source_checkpoint_sha256: "2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6"
+  target_runtime: "PyTorch Mobile Lite (org.pytorch:pytorch_android_lite:1.13.1)"
+  exported_artifacts:
+    primary_champion:
+      filename: "model_int8_dynamic.pt"
+      size_mb: 4.560
+      sha256: "500ea8b7ed942f16ae59da60b5cab262aebb46f279b2d936bc8f7edf45617200"
+      storage_reduction_pct: 28.12
+    reference_baseline:
+      filename: "model_fp32.pt"
+      size_mb: 6.349
+      sha256: "f96efd242902ad99021318d0a52f3aee40306939018aadf483ba547778d529e6"
+      storage_reduction_pct: 0.0
+  numerical_parity:
+    clean_test_top1_agreement_pct: 100.00
+    clean_test_top5_agreement_pct: 100.00
+    clean_test_abstention_agreement_pct: 100.00
+    max_probability_difference: 0.000000
+    contrast_s5_top1_agreement_pct: 100.00
+  host_container_benchmarks:
+    model_only_mean_latency_ms: 5.25
+    model_only_fps: 190.47
+    end_to_end_mean_latency_ms: 9.18
+    end_to_end_fps: 108.94
+    preprocessing_overhead_ms: 3.93
+  frozen_parameters:
+    calibration_temperature: 0.5406
+    selective_abstention_threshold: 0.8143
+  android_application:
+    directory: "android/"
+    package_name: "com.agrirobust.classifier"
+    compile_sdk: 34
+    min_sdk: 24
+    assets_synchronized: true
+
+# ------------------------------------------------------------------------------
 # Success Criteria Targets (SOT Section 18) - Targets, not guarantees
 # ------------------------------------------------------------------------------
 targets:

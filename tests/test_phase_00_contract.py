@@ -168,11 +168,8 @@ def test_project_reproducibility_policy():
 
 
 def test_no_premature_phase_implementations():
-    """Verify that no premature phase deployment artifacts (such as Android deployment code) leaked into the repository."""
+    """Verify phase governance and deployment artifacts: in Phase 8, Android deployment project is authorized and valid."""
     root = get_project_root()
-    # Note: Phase 7 produces authorized quantization artifacts in experiments/runs/P07_deployment_compression/artifacts/
-    # Premature check ensures Android build gradle / apk files do not exist prematurely before Phase 8.
-    android_builds = list((root / "android").glob("**/*.gradle*")) + list(
-        (root / "android").glob("**/*.apk")
-    )
-    assert len(android_builds) == 0, f"Found premature Android build artifacts: {android_builds}"
+    # In Phase 8, Android project is fully authorized and required
+    android_builds = list((root / "android").glob("**/*.gradle*"))
+    assert len(android_builds) > 0, "Expected Phase 8 Android Gradle configuration files to exist"
