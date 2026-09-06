@@ -170,9 +170,9 @@ Evaluated on 8,883 uncurated mobile phone captures under outdoor field condition
 
 ## 4. Scientific Discussion & Architectural Insights
 
-1. **Synthetic vs. Natural Shift Generalization**:
-   - Knowledge distillation via soft probability targets (Response-KD) provides substantial benefits on **both** synthetic corruptions (**mRCE 79.87%**) and natural field distribution shift (**PlantDoc Macro F1 0.1791** vs baseline 0.1298).
-   - This empirically answers the central research question: KD's advantages are **not** an artifact of the PlantDoc test set; rather, KD enforces representations that tolerate sensor noise, overexposure, low dynamic range, and severe compression.
+1. **Multi-Benchmark Robustness Improvements**:
+   - Response KD improves performance across both the synthetic corruption suite (**mRCE 79.87%**, a 20.13% error reduction relative to baseline) and the PlantDoc natural-domain shift (**PlantDoc Macro F1 0.1791** vs baseline 0.1298).
+   - This provides empirical evidence that its robustness benefit is not limited to a single benchmark, showing that KD enforces representations that better tolerate sensor noise, overexposure, low dynamic range, and severe compression. However, this does not imply that robustness universally generalizes to arbitrary unobserved natural distribution shifts.
 2. **Why Soft Targets Buffer High-Frequency Perturbations**:
    - The Student Baseline trained with hard one-hot Cross-Entropy overfits to sharp, crisp laboratory leaf textures. Under additive Gaussian noise or Defocus Blur, these high-frequency patterns are scrambled, driving accuracy down to near chance (5% and 4%).
    - Distillation trains the student on smoothed class distribution vectors. This regularizes the gradient updates and discourages the network from relying exclusively on brittle high-frequency features.
