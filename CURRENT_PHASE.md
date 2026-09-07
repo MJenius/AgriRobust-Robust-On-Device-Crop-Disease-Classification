@@ -1,39 +1,39 @@
-# Phase: 8 — Android Deployment and On-Device Validation
+# Phase: 9 — Final Validation, Reproducibility & Project Release
 
 ## Objective
-Convert the frozen Phase 7 deployment champion (`P07_int8_dynamic`, 4.30 MB state dict, 1.56M parameter `MobileNetV3-Small` response-distilled student) into a reproducible mobile inference artifact and standalone Android application. Evaluate numerical parity, confidence calibration transfer ($T = 0.5406$), selective abstention decision parity ($\tau = 0.8143$), preprocessing parity, and host-side mobile container execution latency.
+Conclude the AgriRobust research and engineering lifecycle:
+1. Correct all overclaims regarding confidence calibration and abstention safety guarantees.
+2. Transparently document the 99.7% high-confidence false-acceptance failure observed during physical screen-recapture testing on `03_plantdoc_potato_late_blight.jpg`.
+3. Preserve the six physical camera test cases as qualitative real-world case studies.
+4. Synthesize all cross-phase empirical results comparing Teacher (`ConvNeXt-Tiny`), Student Baseline (`MobileNetV3-Small`), Response-KD Student, and the Deployed Dynamic INT8 Champion (`model_int8_dynamic.pt`).
+5. Cryptographically lock and verify all model checkpoints and deployment containers.
+6. Execute the full automated regression test suite and freeze the repository.
 
 ## Status
-PASSED / FROZEN (2026-09-07)
+COMPLETED & FROZEN (2026-09-07)
 
 ## Completed Work
-- **Modular Deployment Infrastructure**:
-  - `src/agrirobust/deployment/export.py`: Exported frozen model to mobile TorchScript container, packaged canonical `labels.json` (38 classes) and `deployment_metadata.json`.
-  - `src/agrirobust/deployment/preprocessing.py`: Formalized mathematical preprocessing contract (`Resize((224, 224))` direct bilinear scaling, ImageNet mean/std normalization) with verified 0.000000 maximum difference against Android bitmap normalization.
-  - `src/agrirobust/deployment/validate_export.py`: Evaluated numerical and prediction parity across Clean Test and stress shift conditions.
-  - `src/agrirobust/deployment/mobile_benchmark.py`: Host-side mobile runtime container benchmarker separating model-only latency from end-to-end (preprocessing + inference + calibration + decision) latency.
-- **Standalone Android Application**:
-  - `android/build.gradle`, `android/app/build.gradle`: Gradle build configuration targeting Android SDK 34 with PyTorch Mobile Lite (`org.pytorch:pytorch_android_lite:1.13.1`).
-  - `android/app/src/main/AndroidManifest.xml`: Standard application manifest with camera and gallery permissions.
-  - `android/app/src/main/java/com/agrirobust/classifier/AgriClassifier.kt`: On-device inference engine implementing ImageNet tensor normalization, model forward pass, frozen temperature scaling ($T=0.5406$), and selective abstention decision logic ($\tau=0.8143$).
-  - `android/app/src/main/java/com/agrirobust/classifier/MainActivity.kt`: Diagnostic UI displaying leaf image picker, classification result, confidence score, and clear visual "Accepted" vs "Abstained / Uncertain" status badge.
-  - `android/app/src/main/assets/`: Synchronized deployment assets (`model_int8_dynamic.pt` at 4.56 MB, fallback `model_fp32.pt` at 6.35 MB, `labels.json`, and `deployment_metadata.json`).
-- **Key Empirical Results**:
-  - **Prediction Parity**: **`100.00% Top-1 agreement`** and **`100.00% Top-5 agreement`** between Python reference and the mobile TorchScript container on 1,000 Clean Test images and 500 Contrast s5 stress images.
-  - **Abstention Parity**: **`100.00% decision agreement`** on whether to accept or abstain.
-  - **Storage Compression**: `model_int8_dynamic.pt` occupies **`4.56 MB`**, achieving a **`28.12% storage reduction / compression`** over the FP32 mobile container (6.35 MB).
-  - **Host Mobile-Runtime Benchmarks**:
-    - Model-Only Latency: **`5.25 ms`** (**`190.5 FPS`**).
-    - End-to-End Latency: **`9.18 ms`** (**`108.9 FPS`**; preprocessing overhead: ~3.93 ms).
-  - **Physical On-Device Hardware Validation (Samsung Galaxy SM-A146B / Exynos 1330 / Android 15)**:
-    - Successfully built and installed `app-debug.apk` directly to physical device via ADB.
-    - True physical phone inference latency over 50 iterations: **`45.40 ms mean`**, **`44.00 ms median (P50)`**, **`49.00 ms (P90)`**, **`53.00 ms (P95)`**.
-    - End-to-end mobile inference (~55 ms) easily beats the target project budget (< 100 ms) by **2.2×**.
-    - Verified on-device temperature scaling ($T=0.5406$) and selective abstention ($\tau=0.8143$) functionality.
-- **Verification**:
-  - Source checkpoint SHA-256 confirmed immutable: `2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6`.
-  - All 49 project tests passed cleanly in `uv run pytest -v`.
-  - Published master report in `reports/phase_08_android_deployment.md` and exported metrics in `experiments/runs/P08_android_deployment/metrics.json`.
+- **Overclaim Rectification & Honest Documentation**:
+  - Updated `data/examples/README.md` to re-frame the six physical smartphone tests as qualitative evidence.
+  - Transparently detailed the critical failure case on `03_plantdoc_potato_late_blight.jpg` (erroneously accepted as `Corn — Gray leaf spot` at 99.7% confidence under Moiré artifacts).
+  - Clarified that temperature scaling ($T=0.5406$) and selective abstention ($\tau=0.8143$) mitigate uncertainty on familiar distributions but do not provide a universal safety guarantee under out-of-domain shifts.
+- **Cross-Phase Empirical Synthesis**:
+  - Created `experiments/runs/P09_final_synthesis/summary.json` containing the master comparison of Teacher, Student Baseline, Response KD, and Deployed INT8 Champion across 18 core evaluation metrics.
+  - Authored comprehensive final release report in `reports/phase_09_final_synthesis.md`.
+- **Reproducibility & Verification**:
+  - Authored automated test suite `tests/test_phase_09_final_release.py`.
+  - Cryptographically validated SHA-256 hashes for:
+    - Teacher: `7b80b48404531597f098571e56d53f03676305b57a7938ff27a4389e8fa1d1af`
+    - Student Baseline: `6076d8a2b0f4d5d562b2ce380df91ceb2561b1105b13eeab08a60fe93cce2eee`
+    - Response-KD Champion: `2b935203522c1a58ce94963b251ae80b9a6669a2c1f1c74658a48e36195eb8c6`
+    - Mobile TorchScript Champion: `500ea8b7ed942f16ae59da60b5cab262aebb46f279b2d936bc8f7edf45617200`
+- **Complete Test Suite Validation**:
+  - 100% of project tests passing cleanly (`53 passed`).
+
+## Repository Status
+All 9 phases (Phase 0 through Phase 9) are fully executed, documented, and frozen.
+The repository is sealed and deployment-ready.
 
 ## Next Phase
-All Phases 0 through 8 Complete — Final Project Review & Deployment Ready
+None — Project lifecycle complete and frozen.
+

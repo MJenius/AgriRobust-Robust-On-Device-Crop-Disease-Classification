@@ -38,50 +38,68 @@ Disease Prediction & Uncertainty Estimation
 Decision Rule: High Confidence Prediction OR Selective Abstention
 ```
 
-## Current Project Phase
+## Project Status: Completed & Frozen (Phases 0–9)
 
-**Current Phase: Phase 0 — Project Contract and Environment**
+**All 9 project phases have been successfully executed, evaluated, cryptographically verified, and frozen.**
 
-Refer to [CURRENT_PHASE.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/CURRENT_PHASE.md) for allowed activities and phase boundaries.  
-The authoritative project specification is preserved in [PROJECT_SOT.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/PROJECT_SOT.md).
+- Refer to [CURRENT_PHASE.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/CURRENT_PHASE.md) for phase history and signoffs.  
+- The authoritative project contract and specification is maintained in [PROJECT_SOT.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/PROJECT_SOT.md).
+- Detailed findings, benchmarking, and failure analysis are published in [reports/phase_09_final_synthesis.md](file:///c:/Users/mjeni/OneDrive/Desktop/Own%20Projects/AgriRobust%20-%20Small%20LM%20Plants%20Disease%20Classification/reports/phase_09_final_synthesis.md).
 
-> **Note**: In Phase 0, no model training, knowledge distillation, robustness benchmarking, compression, or Android app implementation is performed.
+---
+
+## Executive Results Summary
+
+| Metric | Teacher (`ConvNeXt-Tiny`) | Student Baseline (`MobileNetV3-Small`) | Response-KD Student *(Champion)* | Deployed INT8 Champion (`model_int8_dynamic.pt`) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Parameters** | 27.85M | 1.56M (-94.4%) | 1.56M | **1.56M** (5.59% of teacher) |
+| **Model Size** | 106.31 MB | 6.08 MB | 6.07 MB | **4.56 MB** (28.1% container compression) |
+| **Clean Test Accuracy** | 98.31% | **99.75%** | 99.30% | **99.31%** |
+| **PlantDoc Cross-Domain Acc** | **21.05%** | 11.62% | 18.39% | **18.41%** (Recovers 63.6% of teacher gap) |
+| **Contrast s5 Stress Acc** | 96.54% | 73.99% | 92.41% | **92.43%** (+18.4% over baseline) |
+| **Calibrated Clean ECE** | 0.0038 | 0.0013 | 0.0020 | **0.0016** ($T = 0.5406$) |
+| **Host CPU Latency** | 75.29 ms | 18.41 ms | 4.73 ms | **5.25 ms** (Model) / **9.18 ms** (End-to-End) |
+| **Physical Phone Latency** | — | — | — | **45.40 ms mean** (Samsung Galaxy A14 / Exynos 1330) |
+
+> [!WARNING]
+> **Safety Notice & Out-of-Domain Failure Mode**:
+> Temperature scaling ($T=0.5406$) and selective abstention ($\tau=0.8143$) effectively filter uncertainty on familiar distributions, reducing clean ECE to 0.16%. However, empirical testing on the physical smartphone (`data/examples/03_plantdoc_potato_late_blight.jpg`) demonstrated an accepted false diagnosis (`Corn — Gray leaf spot` at **99.7% confidence**) under combined optical Moiré artifacts and out-of-domain shift. **Selective abstention must not be treated as a foolproof safety guarantee in agricultural deployments.**
+
+---
 
 ## Repository Structure
 
 ```text
 agrirobust/
 ├── PROJECT_SOT.md       # Authoritative Single Source of Truth
-├── CURRENT_PHASE.md     # Phase tracking and phase gates
-├── README.md            # Project overview and instructions
+├── CURRENT_PHASE.md     # Phase tracking and completion history (Phases 0–9)
+├── README.md            # Project overview, synthesis, and instructions
 ├── pyproject.toml       # Python package configuration and pinned dependencies
 ├── configs/             # Experiment, dataset, and metric configurations
 │   ├── project.yaml
 │   ├── datasets.yaml
 │   └── metrics.yaml
 ├── data/
-│   ├── raw/             # Unprocessed raw dataset archives (not committed)
-│   ├── processed/       # Canonicalized and verified datasets
-│   └── manifests/       # Split and integrity metadata files
-├── src/                 # Source package: agrirobust
-│   ├── agrirobust/
-│   │   ├── __init__.py
-│   │   ├── data/
-│   │   ├── models/
-│   │   ├── training/
-│   │   ├── distillation/
-│   │   ├── robustness/
-│   │   ├── uncertainty/
-│   │   ├── compression/
-│   │   ├── evaluation/
-│   │   └── deployment/
-├── experiments/         # Experiment run outputs, logs, and configs
-│   └── README.md
-├── reports/             # Phase reports, decision logs, and Pareto analyses
-│   ├── README.md
-│   └── phase_00_decisions.md
-├── tests/               # Unit and regression test suite
-└── android/             # Future on-device Android deployment application
+│   ├── raw/             # Unprocessed raw dataset archives (gitignored)
+│   ├── processed/       # Canonicalized datasets (PlantVillage 38 classes, PlantDoc)
+│   ├── manifests/       # Split and integrity metadata files
+│   └── examples/        # 6 qualitative smartphone camera evaluation samples & failure log
+├── src/agrirobust/      # Core package
+│   ├── data/            # Canonical dataset loaders and transforms
+│   ├── models/          # Teacher (ConvNeXt-Tiny) & Student (MobileNetV3-Small)
+│   ├── training/        # Supervised training loop
+│   ├── distillation/    # Response, feature, and combined knowledge distillation
+│   ├── robustness/      # 7 synthetic corruption families (5 severities each)
+│   ├── uncertainty/     # Temperature calibration and selective prediction
+│   ├── compression/     # Pruning and dynamic INT8 quantization
+│   ├── evaluation/      # Metrics, ECE, NLL, AURC, and reporting engines
+│   └── deployment/      # TorchScript export, preprocessing parity, and benchmarks
+├── experiments/         # Run outputs, logs, and checkpoints
+│   ├── checkpoints/     # Cryptographically verified .pt weights
+│   └── runs/            # Master metric logs (P02 through P09)
+├── reports/             # Comprehensive phase research reports (Phases 00 through 09)
+├── android/             # Standalone Android application (PyTorch Mobile Lite 1.13.1)
+└── tests/               # Automated unit, regression, and release test suite (53 tests)
 ```
 
 ## Environment Setup
@@ -106,10 +124,10 @@ source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
 
-## Running Phase 0 Verification Tests
+## Running Verification Tests
 
-To verify environment integrity, configuration validity, SOT alignment, and directory structure:
+To execute the complete regression and release test suite:
 
 ```bash
-pytest tests/ -v
+uv run pytest -v
 ```
